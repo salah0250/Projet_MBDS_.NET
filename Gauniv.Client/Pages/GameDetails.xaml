@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="Gauniv.Client.Pages.GameDetails"
+             Title="GameDetails"
+             BindingContext="{vm:GameDetailsViewModel}"
+             x:DataType="vm:GameDetailsViewModel">
+    <Label Text="Game details" />
+    <!-- 
+    On veut afficher le detail d'un jeu: nom, description
+    si il est possédé
+    - si oui
+        si il est en cours de téléchargement, si il est en cours de jeu, si il est installé
+    - si non le prix et la possibilité d'achat
+    -->
+</ContentPage>
