@@ -1,29 +1,27 @@
-     name: CI
+name: CI
 
-     on:
-       push:
-         branches:
-           - develop
-       pull_request:
-         branches:
-           - develop
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
 
-     jobs:
-       build:
-         runs-on: ubuntu-latest
-
-         steps:
-         - name: Checkout repository
-           uses: actions/checkout@v2
-
-         - name: Setup .NET Core
-           uses: actions/setup-dotnet@v1
-           with:
-             dotnet-version: '9.0.x' 
-
-         - name: Restore dependencies
-           run: dotnet restore
-
-         - name: Build
-           run: dotnet build --no-restore
-     
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.100-rc.2.24474.11'  # This is the correct RC version number
+    
+    - name: Restore dependencies
+      run: dotnet restore Gauniv.sln
+      
+    - name: Build
+      run: dotnet build Gauniv.sln --no-restore --configuration Release
