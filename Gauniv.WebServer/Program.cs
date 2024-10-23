@@ -9,92 +9,96 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 
+var builder = WebApplication.CreateBuilder(args);
 
-// Set the culture so that the culture is the same between front and back
+// Configuration pour définir la culture
 var cultureInfo = new CultureInfo("en-US");
 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
 CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
-
-var builder = WebApplication.CreateBuilder(args);
-
-
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-
-builder.Services.Configure<RequestLocalizationOptions>(s =>
-{
-    s.SupportedCultures =
-    [
-        cultureInfo
-    ];
-    s.SupportedUICultures =
-    [
-        cultureInfo
-    ];
-});
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// Connexion à la base de données PostgreSQL
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                      ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<User>(options => {
+// Configuration des services Identity pour la gestion des utilisateurs
+builder.Services.AddDefaultIdentity<User>(options =>
+{
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = false;
-    options.Password.RequiredLength = 1;
+    options.Password.RequiredLength = 6;  // Exigence minimale pour le mot de passe
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
-}).AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddControllersWithViews().AddViewLocalization(Microsoft.AspNetCore.Mvc.Razor.LanguageViewLocationExpanderFormat.Suffix).AddDataAnnotationsLocalization();
-builder.Services.AddOpenApi(options =>
-{
-    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
-});
-builder.Services.AddRazorPages();
+})
+.AddRoles<IdentityRole>() // Gestion des rôles si nécessaire
+.AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddAutoMapper(typeof(MappingProfile));
+// Ajout des services pour les pages Razor, MVC et SignalR
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
-builder.Services.AddHostedService<OnlineService>();
-builder.Services.AddHostedService<SetupService>();
-// var redis = new  RedisService(redisConnectionString);
-// builder.Services.AddSingleton(redis);
+
+// Ajout des services d'hébergement (ex : Redis, services en arrière-plan)
+builder.Services.AddHostedService<OnlineService>(); // Gestion des utilisateurs en ligne avec SignalR
+builder.Services.AddHostedService<SetupService>();  // Migration ou configuration initiale
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configuration du pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
-    app.UseMigrationsEndPoint();
+    app.UseMigrationsEndPoint();  // Utilisation des migrations automatiques
 }
 else
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
-app.UseRouting();
+app.UseHttpsRedirection();  // Redirection vers HTTPS
+app.UseStaticFiles();       // Utilisation des fichiers statiques (CSS, JS)
 
-app.UseAuthorization();
+app.UseRouting();           // Configuration du routage
 
-app.MapStaticAssets();
+app.UseAuthentication();    // Middleware pour l'authentification
+app.UseAuthorization();     // Middleware pour l'autorisation
 
+// Configuration des routes pour les contrôleurs et les pages Razor
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages();
 
-app.MapRazorPages()
-   .WithStaticAssets();
 
-app.MapOpenApi();
-app.MapGroup("Bearer").MapIdentityApi<User>();
-app.UseSwaggerUI(options =>
-{
-    options.SwaggerEndpoint("/openapi/v1.json", "v1");
-});
+
+// Configuration des hubs SignalR (pour la gestion des utilisateurs en ligne)
 app.MapHub<OnlineHub>("/online");
+
+// Call the CreateRoles method within a scope
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await CreateRoles(services);
+}
+
 app.Run();
+
+async Task CreateRoles(IServiceProvider serviceProvider)
+{
+    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    string[] roleNames = { "Admin", "User" }; // Example roles
+    IdentityResult roleResult;
+
+    foreach (var roleName in roleNames)
+    {
+        var roleExist = await roleManager.RoleExistsAsync(roleName);
+        if (!roleExist)
+        {
+            // Create the roles and seed them to the database
+            roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+}

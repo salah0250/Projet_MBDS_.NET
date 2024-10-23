@@ -1,0 +1,38 @@
+﻿@model Gauniv.WebServer.Data.User
+<div class="card">
+    <div class="card-header">
+        <h2>Supprimer un utilisateur</h2>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-danger">
+            <h4>Êtes-vous sûr de vouloir supprimer cet utilisateur ?</h4>
+            <p>Cette action est irréversible !</p>
+        </div>
+
+        <dl class="row">
+            <dt class="col-sm-3">Nom d'utilisateur</dt>
+            <dd class="col-sm-9">@Model.UserName</dd>
+
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@Model.Email</dd>
+
+            <dt class="col-sm-3">Prénom</dt>
+            <dd class="col-sm-9">@Model.FirstName</dd>
+
+            <dt class="col-sm-3">Nom</dt>
+            <dd class="col-sm-9">@Model.LastName</dd>
+        </dl>
+
+        <form asp-action="DeleteConfirmed" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Confirmer la suppression
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -34,6 +34,8 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
+    <Folder Include="Views\Home\NewFolder\" />
+    <Folder Include="Views\NewFolder\" />
   </ItemGroup>
 
 </Project>

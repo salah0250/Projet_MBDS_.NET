@@ -1,23 +1,45 @@
-﻿@model List<Gauniv.WebServer.Data.Game>
-@using X.PagedList.Mvc.Core;
-@using X.PagedList;
-@{
-    ViewData["Title"] = "View";
-}
-<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
-<h1>View</h1>
+﻿@using Microsoft.AspNetCore.Identity
+@using Gauniv.WebServer.Data
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Id)
-            </td>
-        </tr>
+@model IEnumerable<Gauniv.WebServer.Data.Game>
+
+<h2>Liste des jeux</h2>
+
+<a asp-action="Create" class="btn btn-primary">Ajouter un jeu</a>
+
+<!-- Bouton visible uniquement pour les administrateurs -->
+@if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+{
+    <a href="/Admin/Index" class="btn btn-secondary">Gérer les utilisateurs</a>
 }
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Description</th>
+            <th>Date de sortie</th>
+            <th>Prix</th>
+            <th>Date de Création</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var game in Model)
+        {
+            <tr>
+                <td>@game.Title</td>
+                <td>@game.Description</td>
+                <td>@game.ReleaseDate.ToString("yyyy-MM-dd")</td>
+                <td>@game.Price €</td>
+                <td>@game.CreatedAt.ToShortDateString()</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@game.Id" class="btn btn-warning">Modifier</a>
+                    <a asp-action="Delete" asp-route-id="@game.Id" class="btn btn-danger">Supprimer</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

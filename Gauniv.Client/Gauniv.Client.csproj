@@ -80,7 +80,7 @@
 	  <ProjectReference Include="..\Gauniv.Network\Gauniv.Network.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
+	<ItemGroup>	
 	  <Compile Update="Pages\MyGames.xaml.cs">
 	    <DependentUpon>MyGames.xaml</DependentUpon>
 	  </Compile>
