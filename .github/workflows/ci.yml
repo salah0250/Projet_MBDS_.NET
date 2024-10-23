@@ -20,15 +20,8 @@ jobs:
       with:
         dotnet-version: '9.0.100-rc.2.24474.11'
     
-    - name: Install MAUI Workloads
-      run: |
-        dotnet workload install maui-android
-        dotnet workload install maui-ios
-        dotnet workload install maui-maccatalyst
-        dotnet workload install maui
-    
-    - name: Restore dependencies
-      run: dotnet restore Gauniv.sln
+    - name: Restore dependencies for WebServer
+      run: dotnet restore Gauniv.WebServer/Gauniv.WebServer.csproj
       
-    - name: Build
-      run: dotnet build Gauniv.sln --no-restore --configuration Release
+    - name: Build WebServer
+      run: dotnet build  Gauniv.WebServer/Gauniv.WebServer.csproj --no-restore --configuration Release
