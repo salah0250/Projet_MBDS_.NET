@@ -20,9 +20,10 @@
         <tr>
             <th>Nom</th>
             <th>Description</th>
-            <th>Date de sortie</th>
+            <th>Catégorie</th>
             <th>Prix</th>
             <th>Date de Création</th>
+            <th>Télécharger</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -32,12 +33,17 @@
             <tr>
                 <td>@game.Title</td>
                 <td>@game.Description</td>
-                <td>@game.ReleaseDate.ToString("yyyy-MM-dd")</td>
+                <td>@game.Category</td>
                 <td>@game.Price €</td>
                 <td>@game.CreatedAt.ToShortDateString()</td>
                 <td>
+                    <!-- Lien pour télécharger le fichier -->
+                    <a asp-action="Download" asp-route-id="@game.Id" class="btn btn-primary">Télécharger le jeu</a>
+                </td>
+                <td>
                     <a asp-action="Edit" asp-route-id="@game.Id" class="btn btn-warning">Modifier</a>
                     <a asp-action="Delete" asp-route-id="@game.Id" class="btn btn-danger">Supprimer</a>
+
                 </td>
             </tr>
         }

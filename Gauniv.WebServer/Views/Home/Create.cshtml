@@ -1,8 +1,10 @@
 ﻿@model Gauniv.WebServer.Data.Game
+@using Gauniv.WebServer.Data
+
 
 <h2>Ajouter un nouveau jeu</h2>
 
-<form asp-action="Create" method="post">
+<form asp-action="Create" method="post" enctype="multipart/form-data">
     <div class="form-group">
         <label for="Title">Nom du jeu</label>
         <input type="text" class="form-control" id="Title" asp-for="Title" />
@@ -23,5 +25,21 @@
         <input type="number" class="form-control" id="Price" asp-for="Price" />
         <span asp-validation-for="Price" class="text-danger"></span>
     </div>
+
+    <!-- Champ pour sélectionner la catégorie -->
+    <!-- Autres champs -->
+    <div class="form-group">
+        <label for="Category">Catégorie</label>
+        <select asp-for="Category" class="form-control" asp-items="Html.GetEnumSelectList<Category>()"></select>
+        <span asp-validation-for="Category" class="text-danger"></span>
+    </div>
+
+    <!-- Champ pour uploader le binaire du jeu -->
+    <div class="form-group">
+        <label asp-for="Payload"></label>
+        <input asp-for="Payload" type="file" class="form-control" name="file" />
+        <span asp-validation-for="Payload" class="text-danger"></span>
+    </div>
+
     <button type="submit" class="btn btn-primary">Enregistrer</button>
 </form>
