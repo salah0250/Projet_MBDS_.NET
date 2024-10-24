@@ -3,6 +3,7 @@ using Gauniv.WebServer.Dtos;
 using Gauniv.WebServer.Security;
 using Gauniv.WebServer.Services;
 using Gauniv.WebServer.Websocket;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -44,8 +45,18 @@ builder.Services.AddSignalR();
 builder.Services.AddHostedService<OnlineService>(); // Gestion des utilisateurs en ligne avec SignalR
 builder.Services.AddHostedService<SetupService>();  // Migration ou configuration initiale
 
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 104857600; // Set the limit to 100 MB or any size you need
+});
+
 var app = builder.Build();
 
+app.Use(async (context, next) =>
+{
+    context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 104857600; // Set the limit to 100 MB or any size you need
+    await next.Invoke();
+});
 // Configuration du pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
@@ -56,6 +67,9 @@ else
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+// Ajouter dans le fichier Program.cs avant `app.Build()` :
+
 
 app.UseHttpsRedirection();  // Redirection vers HTTPS
 app.UseStaticFiles();       // Utilisation des fichiers statiques (CSS, JS)

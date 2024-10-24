@@ -21,6 +21,12 @@ namespace Gauniv.WebServer.Data
 
         [Range(0.01, double.MaxValue)]
         public decimal Price { get; set; }
+
+        [Required]
+        [Column(TypeName = "varchar(50)")]  // Spécifie que la catégorie sera stockée en tant que chaîne de caractères
+        public Category Category { get; set; } // Enumération Category
+
+        public byte[] Payload { get; set; } // Le binaire du jeu
     }
 
 }

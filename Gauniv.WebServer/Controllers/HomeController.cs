@@ -41,21 +41,36 @@ namespace Gauniv.WebServer.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")] // Ensure only Admins can post to Create
-        public async Task<IActionResult> Create(Game game)
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Create(Game game, IFormFile file)
         {
+            // Désactiver la validation du champ Payload
+            ModelState.Remove("Payload");
+
             if (ModelState.IsValid)
             {
-                // Convertir toutes les propriétés DateTime à UTC
-                game.ReleaseDate = game.ReleaseDate.ToUniversalTime(); // Ajoutez cette ligne si vous avez une propriété ReleaseDate
-                game.CreatedAt = DateTime.UtcNow; 
+                // Convertir les propriétés DateTime à UTC
+                game.ReleaseDate = game.ReleaseDate.ToUniversalTime();
+                game.CreatedAt = DateTime.UtcNow;
+
+                // Si un fichier a été uploadé, on le convertit en tableau de bytes
+                if (file != null && file.Length > 0)
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await file.CopyToAsync(memoryStream);
+                        game.Payload = memoryStream.ToArray(); // Stocker le fichier dans la propriété Payload
+                    }
+                }
 
                 _applicationDbContext.Games.Add(game);
                 await _applicationDbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(game);
         }
+
 
         // Only allow admins to access the Edit method
         [Authorize(Roles = "Admin")]
@@ -69,16 +84,25 @@ namespace Gauniv.WebServer.Controllers
             return View(game);
         }
 
-        // Ensure only Admins can post to Edit
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(Game game)
+        public async Task<IActionResult> Edit(Game game, int id)
         {
+            // Désactiver la validation du champ Payload
+            ModelState.Remove("Payload");
+
             if (ModelState.IsValid)
             {
                 // Convertir toutes les propriétés DateTime à UTC 
                 game.ReleaseDate = game.ReleaseDate.ToUniversalTime(); // Ajoutez cette ligne si vous avez une propriété ReleaseDate
-                game.CreatedAt = DateTime.UtcNow; 
+                game.CreatedAt = DateTime.UtcNow;
+                // Récupérer le jeu actuel depuis la base de données
+                var existingGame = await _applicationDbContext.Games.FindAsync(id);
+                if (existingGame != null)
+                {
+                    _applicationDbContext.Entry(existingGame).State = EntityState.Detached;
+                }
+                game.Payload = existingGame.Payload;
                 _applicationDbContext.Update(game);
                 await _applicationDbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -116,6 +140,21 @@ namespace Gauniv.WebServer.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+
+        // Action pour télécharger un jeu
+        public async Task<IActionResult> Download(int id)
+        {
+            var game = await _applicationDbContext.Games.FindAsync(id);
+
+            if (game == null || game.Payload == null)
+            {
+                return NotFound();
+            }
+
+            // Télécharger le fichier ZIP
+            return File(game.Payload, "application/zip", $"{game.Title}.zip");
         }
     }
 }
