@@ -86,7 +86,6 @@
                 <div class="game-card-image">
                     <!-- Remplacer par l'image du jeu si disponible -->
                     <img src="@(game.Image != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(game.Image)}" : "/images/default-placeholder.png")" alt="@game.Title" />
-
                 </div>
                 <div class="game-card-content">
                     <h3 class="game-title">@game.Title</h3>
@@ -101,22 +100,43 @@
                         </span>
                         <span class="game-price">@game.Price €</span>
                     </div>
+
                     <div class="game-actions">
-                        <a asp-action="Download"
-                           asp-route-id="@game.Id"
-                           class="btn-download">
-                            <i class="fas fa-download"></i> Télécharger
-                        </a>
+                        @{
+                            var isAdmin = User.IsInRole("Admin");
+                            var userId = UserManager.GetUserId(User);
+                            var userOwnsGame = game.UserGames.Any(ug => ug.UserId == userId);
+                        }
+
+
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            if (userOwnsGame)
+                            {
+                             
+                                <p class="text-capitalize">Présent dans la bibliothèque.</p>
+                            }
+                            else
+                            {
+                                <!-- Bouton "Acheter" si l'utilisateur ne possède pas encore le jeu -->
+                                <a asp-action="Purchase" asp-route-id="@game.Id" class="btn-purchase">
+                                    <i class="fas fa-shopping-cart"></i> Acheter
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <!-- Demander de se connecter pour acheter -->
+                            <p class="text-warning">Veuillez vous connecter pour acheter ce jeu.</p>
+                        }
+
+                        <!-- Actions d'administration -->
                         <div class="admin-buttons">
-                            <a asp-action="Edit"
-                               asp-route-id="@game.Id"
-                               class="btn-edit">
-                                <i class="fas fa-edit"></i>
+                            <a asp-action="Edit" asp-route-id="@game.Id" class="btn-edit">
+                                <i class="fas fa-edit"></i> 
                             </a>
-                            <a asp-action="Delete"
-                               asp-route-id="@game.Id"
-                               class="btn-delete">
-                                <i class="fas fa-trash"></i>
+                            <a asp-action="Delete" asp-route-id="@game.Id" class="btn-delete">
+                                <i class="fas fa-trash"></i> 
                             </a>
                         </div>
                     </div>

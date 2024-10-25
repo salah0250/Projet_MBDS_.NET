@@ -10,5 +10,8 @@ namespace Gauniv.WebServer.Data
 
         [MaxLength(100)]
         public string LastName { get; set; }
+
+        public virtual ICollection<UserGame> UserGames { get; set; } = new List<UserGame>();
+
     }
 }

@@ -1,0 +1,23 @@
+﻿@model IEnumerable<Gauniv.WebServer.Data.Game>
+
+<h2>Ma Bibliothèque</h2>
+
+<div class="games-grid">
+    @foreach (var game in Model)
+    {
+            <div class="game-card">
+                <div class="game-card-image">
+                    <img src="@(game.Image != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(game.Image)}" : "/images/default-placeholder.png")" alt="@game.Title" />
+                </div>
+                <div class="game-card-content">
+                    <h3 class="game-title">@game.Title</h3>
+                    <p class="game-description">@game.Description</p>
+                    <div class="game-actions">
+                        <a asp-action="Download" asp-route-id="@game.Id" class="btn-download">
+                            <i class="fas fa-download"></i> Télécharger
+                        </a>
+                    </div>
+                </div>
+            </div>
+    }
+</div>
