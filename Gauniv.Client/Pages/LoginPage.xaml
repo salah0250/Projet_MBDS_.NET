@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
+             x:Class="Gauniv.Client.Pages.LoginPage"
+             Title="Login"
+             x:DataType="vm:LoginViewModel"
+             BackgroundColor="#1B1C1D">
+    <!-- Fond sombre similaire à Steam -->
+
+    <Grid Padding="30" RowSpacing="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Logo ou titre au-dessus -->
+        <Image Source="dotnet_bot.png" Grid.Row="0" HorizontalOptions="Center" />
+
+        <StackLayout Grid.Row="1" Spacing="15">
+            <Label Text="SIGN IN WITH ACCOUNT NAME" 
+                   FontAttributes="Bold" 
+                   FontSize="14" 
+                   TextColor="LightGray" 
+                   HorizontalOptions="Start" />
+
+            <!-- Champ de nom d'utilisateur -->
+            <Frame CornerRadius="5" Padding="10" BackgroundColor="#2C2D30" HasShadow="False">
+                <Entry Placeholder="Email"
+                       Text="{Binding Email}"
+                       TextColor="White"
+                       Keyboard="Email"  
+                       PlaceholderColor="Gray"
+                       BackgroundColor="Transparent" />
+            </Frame>
+
+
+            <!-- Champ de mot de passe -->
+            <Frame CornerRadius="5" Padding="10" BackgroundColor="#2C2D30" HasShadow="False">
+                <Entry Placeholder="Password" 
+                       Text="{Binding Password}" 
+                       IsPassword="True" 
+                       TextColor="White"
+                       PlaceholderColor="Gray"
+                       BackgroundColor="Transparent" />
+            </Frame>
+        </StackLayout>
+
+        <!-- Bouton "Remember me" -->
+        <StackLayout Grid.Row="2" Orientation="Horizontal">
+            <CheckBox Color="#4095FF" />
+            <Label Text="Remember me" 
+                   TextColor="LightGray" 
+                   VerticalOptions="Center" />
+        </StackLayout>
+
+        <!-- Bouton de connexion -->
+        <Button Text="Sign in"
+                Grid.Row="3"
+                Command="{Binding LoginCommand}"
+                BackgroundColor="#4095FF"
+                TextColor="White"
+                CornerRadius="10"
+                FontAttributes="Bold"
+                HeightRequest="50"
+                HorizontalOptions="FillAndExpand" />
+
+        <!-- Lien d'aide -->
+        <Label Grid.Row="4"
+               Text="Help, I can't sign in"
+               TextColor="LightGray"
+               FontSize="12"
+               HorizontalOptions="Center"
+               VerticalOptions="End" />
+    </Grid>
+</ContentPage>

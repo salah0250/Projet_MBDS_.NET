@@ -15,9 +15,14 @@
     <!--<MenuItem Text="Help"
               IconImageSource="help.png"
               Command="{Binding GoToProfileCommand}"/>-->
+
+    <FlyoutItem Title="Login"
+                Route="login">
+        <ShellContent Route="login" ContentTemplate="{DataTemplate local:LoginPage}" />
+    </FlyoutItem>
     <FlyoutItem Title="Games"
                 Route="games">
-        <ShellContent ContentTemplate="{DataTemplate local:Index}" />
+        <ShellContent ContentTemplate="{DataTemplate local:MyGames}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Profile"

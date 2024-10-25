@@ -18,7 +18,7 @@ namespace Gauniv.Client
                 });
 
 #if DEBUG
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
 
             var app = builder.Build();
