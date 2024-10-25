@@ -27,6 +27,7 @@ namespace Gauniv.WebServer.Data
         public Category Category { get; set; } // Enumération Category
 
         public byte[] Payload { get; set; } // Le binaire du jeu
+        public byte[] Image { get; set; }
     }
 
 }

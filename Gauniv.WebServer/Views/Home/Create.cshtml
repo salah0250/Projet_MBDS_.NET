@@ -34,6 +34,13 @@
         <span asp-validation-for="Category" class="text-danger"></span>
     </div>
 
+    <!-- Champ pour uploader l'image -->
+     <div class="form-group">
+        <label for="Image">Image du jeu</label>
+        <input type="file" class="form-control" asp-for="Image" name="imageFile" />
+        <span asp-validation-for="Image" class="text-danger"></span>
+    </div>
+
     <!-- Champ pour uploader le binaire du jeu -->
     <div class="form-group">
         <label asp-for="Payload"></label>
