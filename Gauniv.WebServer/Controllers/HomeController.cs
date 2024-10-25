@@ -19,18 +19,23 @@ namespace Gauniv.WebServer.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly UserManager<User> _userManager;
+        private readonly ApplicationDbContext _context;
 
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext applicationDbContext, UserManager<User> userManager)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext applicationDbContext, UserManager<User> userManager, ApplicationDbContext context)
         {
             _logger = logger;
             _applicationDbContext = applicationDbContext;
             _userManager = userManager;
+            _context = context;
         }
 
         public IActionResult Index(string searchTerm, decimal? minPrice, decimal? maxPrice, Category? category)
         {
-            var games = _applicationDbContext.Games.AsQueryable();
+            // Inclure la relation UserGames pour récupérer les utilisateurs qui possèdent chaque jeu
+            var games = _applicationDbContext.Games
+                        .Include(g => g.UserGames) // Ajout du Include pour inclure la relation avec UserGames
+                        .AsQueryable();
 
             // Filtrer par nom (Title) - recherche insensible à la casse
             if (!string.IsNullOrEmpty(searchTerm))
@@ -201,18 +206,59 @@ namespace Gauniv.WebServer.Controllers
         }
 
 
-        // Action pour télécharger un jeu
-        public async Task<IActionResult> Download(int id)
+        [Authorize]
+        public async Task<IActionResult> Purchase(int id)
         {
-            var game = await _applicationDbContext.Games.FindAsync(id);
-
-            if (game == null || game.Payload == null)
+            var userId = _userManager.GetUserId(User);
+            if (_context.UserGames.Any(ug => ug.UserId == userId && ug.GameId == id))
             {
-                return NotFound();
+                // L'utilisateur possède déjà le jeu
+                return RedirectToAction("Library");
             }
 
-            // Télécharger le fichier ZIP
-            return File(game.Payload, "application/zip", $"{game.Title}.zip");
+            var userGame = new UserGame
+            {
+                UserId = userId,
+                GameId = id
+            };
+
+            _context.UserGames.Add(userGame);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Library"); // Redirige vers la bibliothèque après l'achat
         }
+
+        [Authorize]
+        public async Task<IActionResult> Download(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var userGame = _context.UserGames.FirstOrDefault(ug => ug.UserId == userId && ug.GameId == id);
+
+            if (userGame == null)
+            {
+                return Unauthorized(); // L'utilisateur n'a pas acheté le jeu
+            }
+
+            var game = await _context.Games.FindAsync(id);
+            if (game?.Payload == null) return NotFound();
+
+            return File(game.Payload, "application/octet-stream", $"{game.Title}.zip");
+        }
+
+
+        [Authorize]
+        public IActionResult Library()
+        {
+            var userId = _userManager.GetUserId(User);
+            var userGames = _context.UserGames
+                .Where(ug => ug.UserId == userId)
+                .Select(ug => ug.Game)
+                .ToList();
+
+            return View(userGames);
+        }
+
+
+
     }
 }

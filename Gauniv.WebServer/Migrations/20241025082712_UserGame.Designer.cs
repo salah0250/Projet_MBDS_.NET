@@ -3,6 +3,7 @@ using System;
 using Gauniv.WebServer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Gauniv.WebServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241025082712_UserGame")]
+    partial class UserGame
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,21 +144,27 @@ namespace Gauniv.WebServer.Migrations
 
             modelBuilder.Entity("Gauniv.WebServer.Data.UserGame", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("GameId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    b.Property<int>("Id")
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("GameId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("PurchaseDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("UserId", "GameId");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("GameId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("UserGames");
                 });
@@ -299,13 +308,13 @@ namespace Gauniv.WebServer.Migrations
             modelBuilder.Entity("Gauniv.WebServer.Data.UserGame", b =>
                 {
                     b.HasOne("Gauniv.WebServer.Data.Game", "Game")
-                        .WithMany("UserGames")
+                        .WithMany()
                         .HasForeignKey("GameId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Gauniv.WebServer.Data.User", "User")
-                        .WithMany("UserGames")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -364,16 +373,6 @@ namespace Gauniv.WebServer.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Gauniv.WebServer.Data.Game", b =>
-                {
-                    b.Navigation("UserGames");
-                });
-
-            modelBuilder.Entity("Gauniv.WebServer.Data.User", b =>
-                {
-                    b.Navigation("UserGames");
                 });
 #pragma warning restore 612, 618
         }

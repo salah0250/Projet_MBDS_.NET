@@ -28,6 +28,10 @@ namespace Gauniv.WebServer.Data
 
         public byte[] Payload { get; set; } // Le binaire du jeu
         public byte[] Image { get; set; }
+
+        // Relation avec les utilisateurs qui ont acheté le jeu
+        public virtual ICollection<UserGame> UserGames { get; set; } = new List<UserGame>();
+
     }
 
 }
