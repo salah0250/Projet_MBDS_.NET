@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui;
 using Gauniv.Client.Services;
+using Gauniv.Client.ViewModel;
 using Microsoft.Extensions.Logging;
 
 namespace Gauniv.Client
@@ -19,6 +20,9 @@ namespace Gauniv.Client
 
 #if DEBUG
             builder.Logging.AddDebug();
+            builder.Services.AddSingleton<AuthService>();
+            builder.Services.AddTransient<LoginViewModel>();
+            builder.Services.AddSingleton<AppShell>();
 #endif
 
             var app = builder.Build();
