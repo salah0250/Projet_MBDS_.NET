@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Text;
 using CommunityToolkit.HighPerformance;
 using Gauniv.WebServer.Data;
@@ -27,11 +28,40 @@ namespace Gauniv.WebServer.Controllers
             _userManager = userManager;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string searchTerm, decimal? minPrice, decimal? maxPrice, Category? category)
         {
-            var games = _applicationDbContext.Games.ToList();  // Vérifiez que vous récupérez bien les jeux
-            return View(games);  // Passez la liste des jeux à la vue
+            var games = _applicationDbContext.Games.AsQueryable();
+
+            // Filtrer par nom (Title) - recherche insensible à la casse
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower().Trim();
+                games = games.Where(g => g.Title.ToLower().Contains(searchTerm) ||
+                                        (g.Description != null && g.Description.ToLower().Contains(searchTerm)));
+            }
+
+            // Filtrer par prix minimum
+            if (minPrice.HasValue)
+            {
+                games = games.Where(g => g.Price >= minPrice.Value);
+            }
+
+            // Filtrer par prix maximum
+            if (maxPrice.HasValue)
+            {
+                games = games.Where(g => g.Price <= maxPrice.Value);
+            }
+
+            // Filtrer par catégorie
+            if (category.HasValue)
+            {
+                games = games.Where(g => g.Category == category.Value);
+            }
+
+            return View(games.ToList());
         }
+
+       
 
         // Only allow admins to access the Create method
         [Authorize(Roles = "Admin")]
@@ -42,24 +72,34 @@ namespace Gauniv.WebServer.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create(Game game, IFormFile file)
+        public async Task<IActionResult> Create(Game game, IFormFile file, IFormFile imageFile)
         {
-            // Désactiver la validation du champ Payload
+            // Disable validation for Payload and Image fields
             ModelState.Remove("Payload");
+            ModelState.Remove("Image");
 
             if (ModelState.IsValid)
             {
-                // Convertir les propriétés DateTime à UTC
                 game.ReleaseDate = game.ReleaseDate.ToUniversalTime();
                 game.CreatedAt = DateTime.UtcNow;
 
-                // Si un fichier a été uploadé, on le convertit en tableau de bytes
+                // Handle Payload file
                 if (file != null && file.Length > 0)
                 {
                     using (var memoryStream = new MemoryStream())
                     {
                         await file.CopyToAsync(memoryStream);
-                        game.Payload = memoryStream.ToArray(); // Stocker le fichier dans la propriété Payload
+                        game.Payload = memoryStream.ToArray();
+                    }
+                }
+
+                // Handle Image file
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await imageFile.CopyToAsync(memoryStream);
+                        game.Image = memoryStream.ToArray(); // Store the image
                     }
                 }
 
@@ -70,6 +110,7 @@ namespace Gauniv.WebServer.Controllers
 
             return View(game);
         }
+
 
 
         // Only allow admins to access the Edit method
@@ -86,29 +127,46 @@ namespace Gauniv.WebServer.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(Game game, int id)
+        public async Task<IActionResult> Edit(Game game, int id, IFormFile imageFile)
         {
-            // Désactiver la validation du champ Payload
+            // Disable validation for Payload and Image fields
             ModelState.Remove("Payload");
+            ModelState.Remove("Image");
 
             if (ModelState.IsValid)
             {
-                // Convertir toutes les propriétés DateTime à UTC 
-                game.ReleaseDate = game.ReleaseDate.ToUniversalTime(); // Ajoutez cette ligne si vous avez une propriété ReleaseDate
+                game.ReleaseDate = game.ReleaseDate.ToUniversalTime();
                 game.CreatedAt = DateTime.UtcNow;
-                // Récupérer le jeu actuel depuis la base de données
+
                 var existingGame = await _applicationDbContext.Games.FindAsync(id);
                 if (existingGame != null)
                 {
                     _applicationDbContext.Entry(existingGame).State = EntityState.Detached;
                 }
                 game.Payload = existingGame.Payload;
+
+                // Handle new image upload
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await imageFile.CopyToAsync(memoryStream);
+                        game.Image = memoryStream.ToArray();
+                    }
+                }
+                else
+                {
+                    game.Image = existingGame.Image; // Retain the old image if no new image is uploaded
+                }
+
                 _applicationDbContext.Update(game);
                 await _applicationDbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(game);
         }
+
 
         // Only allow admins to access the Delete method
         [Authorize(Roles = "Admin")]
