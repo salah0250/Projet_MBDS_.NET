@@ -1,0 +1,16 @@
+ea4bc82a6ad023ab7ee23ee620429895
+::res://::1729936019
+export_presets.cfg::TextFile::-1::1729935799::0::1::::<><>::
+icon.svg::CompressedTexture2D::2986127230692243496::1729862302::1729862336::1::::<><>::
+::res://Scenes/::1729862402
+::res://Scenes/Common/::1729862402
+::res://Scenes/Game/::1729935867
+MainGameScene.cs::CSharpScript::-1::1729934173::0::1::::<>Node2D<>::
+MainGameScene.tscn::PackedScene::6957226338659696257::1729935867::0::1::::<><>::res://Scenes/Game/MainGameScene.cs
+::res://Scenes/UI/::1729935914
+LoginScreen.cs::CSharpScript::-1::1729892727::0::1::::<>Control<>::
+LoginScreen.tscn::PackedScene::2276978476128830581::1729935914::0::1::::<><>::res://Scenes/UI/LoginScreen.cs
+NameSelectionScreen.cs::CSharpScript::-1::1729865124::0::1::::<>Control<>::
+NameSelectionScreen.tscn::PackedScene::6958814018052182730::1729935868::0::1::::<><>::res://Scenes/UI/NameSelectionScreen.cs
+ReadyCheckScreen.cs::CSharpScript::-1::1729873280::0::1::::<>Control<>::
+ReadyCheckScreen.tscn::PackedScene::7577594417550177858::1729935868::0::1::::<><>::res://Scenes/UI/ReadyCheckScreen.cs
