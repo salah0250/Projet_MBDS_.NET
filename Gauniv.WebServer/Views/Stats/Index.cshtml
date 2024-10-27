@@ -1,0 +1,196 @@
+﻿@model dynamic
+@{
+    ViewData["Title"] = "Platform Statistics";
+}
+
+<div class="game-store-container">
+    <!-- Statistiques en cartes -->
+    <div class="games-grid mb-8">
+        <div class="game-card" id="total-games">
+            <!-- Sera rempli par JavaScript -->
+        </div>
+
+        <div class="game-card" id="top-game">
+            <!-- Sera rempli par JavaScript -->
+        </div>
+
+        <div class="game-card" id="top-player">
+            <!-- Sera rempli par JavaScript -->
+        </div>
+
+        <div class="game-card" id="categories">
+            <!-- Sera rempli par JavaScript -->
+        </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="games-grid">
+        <div class="game-card">
+            <div class="game-card-content">
+                <h3 class="game-title">Games by Category</h3>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-card">
+            <div class="game-card-content">
+                <h3 class="game-title">Price Distribution</h3>
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--success-color);
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .stat-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Ajustement des cartes de statistiques */
+        #total-games, #top-game, #top-player, #categories {
+            padding: 1.5rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+    <script>
+        // Configuration des couleurs adaptée à votre thème
+        const colors = {
+            primary: 'var(--primary-color)',
+            secondary: 'var(--secondary-color)',
+            background: 'var(--card-background)',
+            text: 'var(--text-color)',
+            success: 'var(--success-color)'
+        };
+
+        // Style commun pour les graphiques
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: colors.text,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: colors.text,
+                        precision: 0
+                    },
+                    grid: {
+                        color: colors.secondary
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: colors.text
+                    },
+                    grid: {
+                        color: colors.secondary
+                    }
+                }
+            }
+        };
+
+        // Remplissage des statistiques
+        document.getElementById('total-games').innerHTML = `
+            <div class="stat-label">Total Games</div>
+            <div class="stat-value">${@Model.TotalGames}</div>
+        `;
+
+        document.getElementById('top-game').innerHTML = `
+            <div class="stat-label">Most Popular Game</div>
+            <div class="stat-value">${@Html.Raw(Json.Serialize(Model.TopGame?.Title)) ?? 'N/A'}</div>
+            <div class="stat-subtitle">${@(Model.TopGame?.PlayerCount ?? 0)} players</div>
+        `;
+
+        document.getElementById('top-player').innerHTML = `
+            <div class="stat-label">Top Player</div>
+            <div class="stat-value">${@Html.Raw(Json.Serialize(Model.TopPlayer?.UserName)) ?? 'N/A'}</div>
+            <div class="stat-subtitle">${@(Model.TopPlayer?.GameCount ?? 0)} games</div>
+        `;
+
+        document.getElementById('categories').innerHTML = `
+            <div class="stat-label">Total Categories</div>
+            <div class="stat-value">${@(Model.GamesByCategoryKeys.Count)}</div>
+        `;
+
+        // Graphique des catégories
+        const categoryLabels = @Html.Raw(Json.Serialize(Model.CategoryNames));
+        const categoryData = @Html.Raw(Json.Serialize(Model.GamesByCategoryValues));
+
+        new Chart(document.getElementById('categoryChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    label: 'Number of Games',
+                    data: categoryData,
+                    backgroundColor: colors.primary,
+                    borderColor: colors.success,
+                    borderWidth: 1
+                }]
+            },
+            options: chartOptions
+        });
+
+                // Graphique de distribution des prix
+        const priceDistribution = @Html.Raw(Json.Serialize(Model.PriceDistribution));
+
+        const priceChart = new Chart(document.getElementById('priceChart').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['0-10€', '11-20€', '21-30€', '31-40€', '41-50€', '50€+'],
+                datasets: [{
+                    label: 'Number of Games',
+                    data: priceDistribution, // Utilisez les données de distribution des prix
+                    backgroundColor: `${colors.primary}33`,
+                    borderColor: colors.success,
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: chartOptions
+        });
+
+    </script>
+}

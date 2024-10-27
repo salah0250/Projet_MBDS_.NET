@@ -19,7 +19,6 @@ namespace Gauniv.WebServer.Data
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Assurez-vous d'initialiser CreatedAt avec UTC.
 
-        [Range(0.01, double.MaxValue)]
         public decimal Price { get; set; }
 
         [Required]
