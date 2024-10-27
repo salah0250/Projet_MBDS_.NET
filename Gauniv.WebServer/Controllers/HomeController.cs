@@ -231,18 +231,56 @@ namespace Gauniv.WebServer.Controllers
         [Authorize]
         public async Task<IActionResult> Download(int id)
         {
-            var userId = _userManager.GetUserId(User);
-            var userGame = _context.UserGames.FirstOrDefault(ug => ug.UserId == userId && ug.GameId == id);
-
-            if (userGame == null)
+            try
             {
-                return Unauthorized(); // L'utilisateur n'a pas acheté le jeu
+                var userId = _userManager.GetUserId(User);
+                var userGame = await _context.UserGames
+                    .FirstOrDefaultAsync(ug => ug.UserId == userId && ug.GameId == id);
+
+                if (userGame == null)
+                {
+                    return Unauthorized(); // L'utilisateur n'a pas acheté le jeu
+                }
+
+                var game = await _context.Games
+                    .FirstOrDefaultAsync(g => g.Id == id);
+
+                if (game?.Payload == null || game.Payload.Length == 0)
+                {
+                    return NotFound("Le fichier du jeu n'est pas disponible");
+                }
+
+                // Vérification basique du fichier ZIP
+                if (game.Payload.Length >= 4)
+                {
+                    byte[] zipSignature = new byte[] { 0x50, 0x4B, 0x03, 0x04 };
+                    byte[] fileSignature = new byte[4];
+                    Array.Copy(game.Payload, fileSignature, 4);
+
+                    if (!fileSignature.SequenceEqual(zipSignature))
+                    {
+                        _logger.LogError($"Le fichier pour le jeu {id} n'est pas un ZIP valide");
+                        return BadRequest("Le fichier du jeu est corrompu");
+                    }
+                }
+
+                // Configuration de la réponse pour un téléchargement correct
+                Response.Headers.Add("Content-Disposition", $"attachment; filename=\"{game.Title}.zip\"");
+                Response.Headers.Add("Content-Type", "application/zip");
+                Response.Headers.Add("Content-Length", game.Payload.Length.ToString());
+
+                // Utilisation de FileStreamResult pour un meilleur contrôle du flux
+                var stream = new MemoryStream(game.Payload);
+                return new FileStreamResult(stream, "application/zip")
+                {
+                    FileDownloadName = $"{game.Title}.zip"
+                };
             }
-
-            var game = await _context.Games.FindAsync(id);
-            if (game?.Payload == null) return NotFound();
-
-            return File(game.Payload, "application/octet-stream", $"{game.Title}.zip");
+            catch (Exception ex)
+            {
+                _logger.LogError($"Erreur lors du téléchargement du jeu {id}: {ex.Message}");
+                return StatusCode(500, "Une erreur est survenue lors du téléchargement");
+            }
         }
 
 

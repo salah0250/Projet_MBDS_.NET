@@ -33,6 +33,10 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="swagger" asp-action="index">Swagger</a>
                         </li>
+                        <!-- Dans la navbar, après le lien Swagger -->
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Stats" asp-action="Index">Statistics</a>
+                        </li>
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">

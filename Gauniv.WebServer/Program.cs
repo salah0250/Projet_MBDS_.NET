@@ -1,5 +1,6 @@
 using Gauniv.WebServer.Data;
 using Gauniv.WebServer.Dtos;
+using Gauniv.WebServer.Mappings;
 using Gauniv.WebServer.Security;
 using Gauniv.WebServer.Services;
 using Gauniv.WebServer.Websocket;
@@ -38,10 +39,16 @@ builder.Services.AddDefaultIdentity<User>(options =>
 
 // Ajout des services pour les pages Razor, MVC et SignalR
 builder.Services.AddControllersWithViews();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+});
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
+// Add AutoMapper configuration
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddAutoMapper(typeof(GameProfile));
 
-// Ajout des services d'hébergement (ex : Redis, services en arrière-plan)
 builder.Services.AddHostedService<OnlineService>(); // Gestion des utilisateurs en ligne avec SignalR
 builder.Services.AddHostedService<SetupService>();  // Migration ou configuration initiale
 
@@ -83,9 +90,15 @@ app.UseAuthorization();     // Middleware pour l'autorisation
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapRazorPages();
+app.MapRazorPages()
+   .WithStaticAssets();
 
-
+app.MapOpenApi();
+app.MapGroup("Bearer").MapIdentityApi<User>();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/openapi/v1.json", "v1");
+});
 
 // Configuration des hubs SignalR (pour la gestion des utilisateurs en ligne)
 app.MapHub<OnlineHub>("/online");
@@ -96,6 +109,7 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     await CreateRoles(services);
 }
+
 
 app.Run();
 
