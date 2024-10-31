@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
+             x:Class="Gauniv.Client.Pages.LoginPage"
+             Title="Login"
+             x:DataType="vm:LoginViewModel"
+             BackgroundColor="#1B1C1D"
+             BackgroundImageSource="background.jpg">
+
+    <Grid Padding="30" RowSpacing="20" ColumnSpacing="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Column="1" Margin="50,0,0,0" x:Name="mainGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Logo -->
+            <Image Source="logo.png" 
+                   Grid.Row="0" 
+                   HorizontalOptions="Center"
+                   x:Name="logoImage" />
+
+            <StackLayout Grid.Row="1" 
+                        Spacing="15" 
+                        Margin="0,50,0,0"
+                        x:Name="formLayout">
+                <Label Text="SIGN IN WITH ACCOUNT NAME" 
+                       FontAttributes="Bold" 
+                       FontSize="14" 
+                       TextColor="LightGray" 
+                       HorizontalOptions="Start"
+                       x:Name="titleLabel" />
+
+                <!-- Email Frame -->
+                <Frame CornerRadius="5" 
+                       Padding="10" 
+                       BackgroundColor="#2A1F3D" 
+                       HasShadow="False" 
+                       BorderColor="#4E3A6B"
+                       x:Name="emailFrame">
+                    <Entry Placeholder="Email"
+                           Text="{Binding Email}"
+                           TextColor="White"
+                           Keyboard="Email"  
+                           PlaceholderColor="#8E7BA7"
+                           BackgroundColor="Transparent" />
+                </Frame>
+
+                <!-- Password Frame -->
+                <Frame CornerRadius="5" 
+                       Padding="10" 
+                       BackgroundColor="#2A1F3D" 
+                       HasShadow="False"
+                       BorderColor="#4E3A6B"
+                       x:Name="passwordFrame">
+                    <Entry Placeholder="Password" 
+                           Text="{Binding Password}" 
+                           IsPassword="True" 
+                           TextColor="White"
+                           PlaceholderColor="#8E7BA7"
+                           BackgroundColor="Transparent"/>
+                </Frame>
+            </StackLayout>
+
+            <!-- Remember me section -->
+            <StackLayout Grid.Row="2" 
+                        Orientation="Horizontal" 
+                        Margin="0,20,0,0"
+                        x:Name="rememberMeLayout">
+                <CheckBox Color="#4095FF" />
+                <Label Text="Remember me" 
+                       TextColor="LightGray" 
+                       VerticalOptions="Center" />
+            </StackLayout>
+
+            <!-- Sign in button -->
+            <Button Text="Sign in"
+                    Grid.Row="3"
+                    Command="{Binding LoginCommand}"
+                    BackgroundColor="#4095FF"
+                    TextColor="White"
+                    CornerRadius="10"
+                    FontAttributes="Bold"
+                    HeightRequest="50"
+                    HorizontalOptions="FillAndExpand"
+                    Margin="0,20,0,0"
+                    x:Name="signInButton" />
+
+            <!-- Create account section -->
+            <StackLayout Grid.Row="4"
+                         Orientation="Horizontal"
+                         HorizontalOptions="Center"
+                         VerticalOptions="End"
+                         Margin="0,20,0,0"
+                         Spacing="5"
+                         x:Name="createAccountLayout">
+                <Label Text="Need a Gaming account? "
+                       TextColor="LightGray"
+                       FontSize="12"
+                       VerticalOptions="Center" />
+                <Label Text="Create an account"
+                       TextColor="MediumVioletRed"
+                       FontSize="14"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       TextDecorations="Underline">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding CreateAccountCommand}" />
+                    </Label.GestureRecognizers>
+                </Label>
+            </StackLayout>
+        </Grid>
+    </Grid>
+</ContentPage>

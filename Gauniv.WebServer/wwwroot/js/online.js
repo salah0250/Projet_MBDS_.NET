@@ -1,11 +1,15 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿"use strict";
 
-// Write your JavaScript code.
-"use strict";
+var connection = new signalR.HubConnectionBuilder()
+    .withUrl("/online")
+    .withAutomaticReconnect()  // Ajout pour gérer les reconnexions automatiques
+    .configureLogging(signalR.LogLevel.Information)  // Ajout de logs pour plus de détails
+    .build();
 
-var connection = new signalR.HubConnectionBuilder().withUrl("/online").build();
-connection.on("ReceiveMessage", function ( message) {
+// Ajuster le timeout du serveur à 60 secondes
+connection.serverTimeoutInMilliseconds = 60000;  // 60 secondes de timeout
+
+connection.on("ReceiveMessage", function (message) {
     console.log("message", message);
 });
 

@@ -1,0 +1,382 @@
+﻿/* Variables CSS personnalisées */
+:root {
+    --primary-color: #1a9fff;
+    --secondary-color: #2b2b2b;
+    --background-color: #1b2838;
+    --card-background: #2a475e;
+    --text-color: #ffffff;
+    --text-secondary: #acb2b8;
+    --success-color: #66c0f4;
+    --danger-color: #ff4444;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --hover-transition: all 0.3s ease;
+}
+
+/* Styles généraux */
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.game-store-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Header */
+.store-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.store-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Barre de recherche et filtres */
+.search-filters-container {
+    background-color: var(--secondary-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.filters-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.search-bar {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+.search-input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.filters-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.price-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.price-input {
+    width: 100px;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.category-select {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.filter-button {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 4px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: var(--hover-transition);
+}
+
+    .filter-button:hover {
+        background-color: var(--success-color);
+    }
+
+/* Grille de jeux */
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.game-card {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: var(--hover-transition);
+}
+
+    .game-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+.game-card-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+    .game-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+.game-card-content {
+    padding: 1.5rem;
+}
+
+.game-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-color);
+}
+
+.game-category {
+    margin-bottom: 1rem;
+}
+
+.category-badge {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+}
+
+.game-description {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.game-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.game-price {
+    font-weight: 600;
+    color: var(--success-color);
+    font-size: 1.25rem;
+}
+
+.game-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-download {
+    padding: 0.5rem 1rem;
+    background-color: var(--success-color);
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 4px;
+    transition: var(--hover-transition);
+}
+
+    .btn-download:hover {
+        background-color: var(--primary-color);
+    }
+
+.admin-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-edit,
+.btn-delete {
+    padding: 0.5rem;
+    border-radius: 4px;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: var(--hover-transition);
+}
+
+.btn-edit {
+    background-color: var(--primary-color);
+}
+
+.btn-delete {
+    background-color: var(--danger-color);
+}
+.filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.reset-button {
+    padding: 0.5rem 1rem;
+    background-color: var(--danger-color);
+    border: none;
+    border-radius: 4px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: var(--hover-transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.table {
+    width: 100%;
+    background-color: var(--card-background); /* Pour que la table ait la même couleur de fond que tes cartes */
+    color: var(--text-color); /* Utilise la couleur de texte blanche définie dans les variables */
+    border-collapse: collapse;
+}
+
+    .table th, .table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--secondary-color); /* Couleur de séparation entre les lignes */
+        color: var(--text-color); /* Assure que le texte est blanc */
+    }
+
+    .table th {
+        text-align: left;
+        font-weight: 700;
+    }
+
+    .table tbody tr:hover {
+        background-color: var(--secondary-color); /* Couleur d'arrière-plan lors du survol */
+        transition: var(--hover-transition); /* Animation lors du survol */
+    }
+
+    .reset-button:hover {
+        background-color: #ff6666;
+    }
+    .btn-edit:hover,
+    .btn-delete:hover {
+        opacity: 0.8;
+    }
+
+/* Media Queries */
+@media screen and (max-width: 1200px) {
+    .game-store-container {
+        padding: 1rem;
+    }
+
+    .games-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .store-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .admin-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+        .admin-actions .btn {
+            width: 100%;
+        }
+
+    .filters-form {
+        flex-direction: column;
+    }
+
+    .filters-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .price-filters {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .price-input {
+        width: calc(50% - 1rem);
+    }
+
+    .category-select,
+    .filter-button {
+        width: 100%;
+    }
+    .filter-buttons {
+        width: 100%;
+    }
+
+    .filter-button,
+    .reset-button {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .store-title {
+        font-size: 1.8rem;
+    }
+
+    .game-card-image {
+        height: 150px;
+    }
+
+    .game-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .btn-download {
+        width: 100%;
+        text-align: center;
+    }
+
+    .admin-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+

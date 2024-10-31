@@ -15,6 +15,7 @@
     <PackageReference Include="AutoMapper.Collection.EntityFrameworkCore" Version="10.0.0" />
     <PackageReference Include="AutoMapper.Extensions.EnumMapping" Version="3.2.0" />
     <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.3.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.0-rc.2.24474.3" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0-rc.2.24474.3" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.0-rc.2.24474.3" />
@@ -34,6 +35,8 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
+    <Folder Include="Views\Home\NewFolder\" />
+    <Folder Include="Views\NewFolder\" />
   </ItemGroup>
 
 </Project>

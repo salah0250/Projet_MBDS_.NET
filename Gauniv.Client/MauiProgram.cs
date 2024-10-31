@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui;
 using Gauniv.Client.Services;
+using Gauniv.Client.ViewModel;
 using Microsoft.Extensions.Logging;
 
 namespace Gauniv.Client
@@ -10,7 +11,8 @@ namespace Gauniv.Client
         {
             var builder = MauiApp.CreateBuilder();
             builder
-                .UseMauiApp<App>().UseMauiCommunityToolkit()
+                .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -18,7 +20,10 @@ namespace Gauniv.Client
                 });
 
 #if DEBUG
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
+            builder.Services.AddSingleton<AuthService>();
+            builder.Services.AddTransient<LoginViewModel>();
+            builder.Services.AddSingleton<AppShell>();
 #endif
 
             var app = builder.Build();
