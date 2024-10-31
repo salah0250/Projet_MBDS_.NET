@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using CommunityToolkit.Mvvm.Input;
 using System.Net.Http.Json;
 using Gauniv.Client.Services;
+
 namespace Gauniv.Client.ViewModel
 {
     public partial class LoginViewModel : ObservableObject
@@ -87,6 +88,13 @@ namespace Gauniv.Client.ViewModel
             {
                 IsBusy = false;
             }
+        }
+
+        [RelayCommand]
+        async Task CreateAccountAsync()
+        {
+            // Open the registration URL in the default web browser
+            await Browser.OpenAsync("https://localhost/Identity/Account/Register", BrowserLaunchMode.SystemPreferred);
         }
     }
 }
