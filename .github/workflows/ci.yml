@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-13  # ou macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.100-rc.2.24474.11'
+    
+    - name: Restore dependencies for WebServer
+      run: dotnet restore Gauniv.WebServer/Gauniv.WebServer.csproj
+      
+    - name: Build WebServer
+      run: dotnet build  Gauniv.WebServer/Gauniv.WebServer.csproj --no-restore --configuration Release
