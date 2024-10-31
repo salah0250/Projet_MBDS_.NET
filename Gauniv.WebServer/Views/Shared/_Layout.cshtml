@@ -6,10 +6,10 @@
     <title>@ViewData["Title"] - Gauniv.WebServer</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    @if(User?.Identity?.IsAuthenticated is not null or false)
+    @if (User?.Identity?.IsAuthenticated is not null or false)
     {
         <script src="~/js/signalr/dist/browser/signalr.js"></script>
-            <script src="~/js/online.js"></script>
+        <script src="~/js/online.js"></script>
     }
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/game-store.css" asp-append-version="true" />
@@ -43,6 +43,12 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Library">Library</a>
                             </li>
                         }
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Players" asp-action="Index">Players</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Players" asp-action="amis">Amis</a>
+                        </li>
 
                     </ul>
                     <partial name="_LoginPartial" />

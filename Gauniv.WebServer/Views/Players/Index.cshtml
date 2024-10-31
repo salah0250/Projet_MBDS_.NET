@@ -1,0 +1,170 @@
+﻿@model IEnumerable<Gauniv.WebServer.Controllers.PlayerViewModel>
+
+<h1>Players List</h1>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Status</th>
+                <th>Active Sessions</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="playersList">
+            @foreach (var player in Model)
+            {
+                <tr data-user-id="@player.Id">
+                    <td>@player.UserName</td>
+                    <td>@($"{player.FirstName} {player.LastName}")</td>
+                    <td class="status">
+                        <span class="badge @(player.IsOnline ? "bg-success" : "bg-secondary")">
+                            @(player.IsOnline ? "Online" : "Offline")
+                        </span>
+                    </td>
+                    <td class="connection-count">@player.ConnectionCount</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary add-friend"
+                                data-user-id="@player.Id"
+                                data-username="@player.UserName">
+                            Add Friend
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Styles {
+    <style>
+        .badge {
+            padding: 0.5em 1em;
+            border-radius: 0.25rem;
+            font-weight: 500;
+        }
+
+        .bg-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .bg-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+
+            .btn-primary:hover {
+                background-color: #0056b3;
+                border-color: #0056b3;
+            }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+            .btn-danger:hover {
+                background-color: #c82333;
+                border-color: #bd2130;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script src="../wwwroot/js/signalr/dist/browser/signalr.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/online")
+                .withAutomaticReconnect([0, 2000, 5000, 10000, null])
+                .build();
+
+            // Update user status function
+            function updateUserStatus(connectedUsers) {
+                const rows = document.querySelectorAll("#playersList tr");
+
+                rows.forEach(row => {
+                    const userId = row.getAttribute('data-user-id');
+                    const statusSpan = row.querySelector(".status span");
+                    const countCell = row.querySelector(".connection-count");
+
+                    if (connectedUsers[userId]) {
+                        statusSpan.textContent = "Online";
+                        statusSpan.classList.remove("bg-secondary");
+                        statusSpan.classList.add("bg-success");
+                        countCell.textContent = connectedUsers[userId].count;
+                    } else {
+                        statusSpan.textContent = "Offline";
+                        statusSpan.classList.remove("bg-success");
+                        statusSpan.classList.add("bg-secondary");
+                        countCell.textContent = "0";
+                    }
+                });
+            }
+
+            // Add friend function
+            async function addFriend(userId) {
+                try {
+                    const response = await fetch('/Players/AddFriend', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: JSON.stringify({ friendId: userId })
+                    });
+
+                    if (response.ok) {
+                        alert('Friend added successfully!');
+                    } else {
+                        alert('Failed to add friend. They might already be in your friends list.');
+                    }
+                } catch (error) {
+                    console.error('Error adding friend:', error);
+                    alert('Error adding friend. Please try again.');
+                }
+            }
+
+            // Event listener for Add Friend buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('add-friend')) {
+                    const userId = e.target.getAttribute('data-user-id');
+                    addFriend(userId);
+                }
+            });
+
+            // SignalR event handlers
+            connection.on("ReceiveOnlineUsers", updateUserStatus);
+
+            // Connection handling with retry logic
+            async function startConnection() {
+                try {
+                    await connection.start();
+                    console.log("SignalR Connected");
+                } catch (err) {
+                    console.error("SignalR Connection Error:", err);
+                    setTimeout(startConnection, 5000);
+                }
+            }
+
+            connection.onclose(async () => {
+                console.log("SignalR Disconnected");
+                await startConnection();
+            });
+
+            // Start the initial connection
+            startConnection();
+        });
+    </script>
+}

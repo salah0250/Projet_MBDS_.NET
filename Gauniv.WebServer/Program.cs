@@ -85,7 +85,6 @@ builder.Services.Configure<RequestLocalizationOptions>(s =>
 });
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
@@ -107,6 +106,9 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddAutoMapper(typeof(GameProfile));
+builder.Services.AddRazorPages();
+builder.Services.AddScoped<FriendService>();
+
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<OnlineService>();
 builder.Services.AddHostedService<SetupService>();
