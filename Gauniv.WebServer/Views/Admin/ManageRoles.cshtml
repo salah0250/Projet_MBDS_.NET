@@ -1,0 +1,21 @@
+﻿@model Gauniv.WebServer.Models.ManageUserRolesViewModel
+
+<h2>Gérer les rôles de l'utilisateur @Model.UserName</h2>
+
+<form asp-action="ManageRoles" method="post">
+    <input type="hidden" asp-for="UserId" />
+    <div>
+        <label>Rôles attribués :</label>
+        @foreach (var role in Model.Roles)
+        {
+            <div>
+                <input type="radio"
+                       name="AssignedRoles" 
+                       value="@role.Name" 
+                       checked="@Model.AssignedRoles.Contains(role.Name)" />
+                <label>@role.Name</label>
+            </div>
+        }
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+</form>

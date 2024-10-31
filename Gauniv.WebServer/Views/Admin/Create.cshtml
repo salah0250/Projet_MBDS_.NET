@@ -1,0 +1,31 @@
+﻿@model Gauniv.WebServer.Data.User
+
+<h2>Créer un utilisateur</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="FirstName" class="control-label">Prénom</label>
+        <input asp-for="FirstName" class="form-control" required />
+        <span asp-validation-for="FirstName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="LastName" class="control-label">Nom</label>
+        <input asp-for="LastName" class="form-control" required />
+        <span asp-validation-for="LastName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="UserName" class="control-label">Nom d'utilisateur</label>
+        <input asp-for="UserName" class="form-control" required />
+        <span asp-validation-for="UserName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Email" class="control-label">Email</label>
+        <input asp-for="Email" class="form-control" required />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label for="password" class="control-label">Mot de passe</label>
+        <input type="password" name="password" class="form-control" required />
+    </div>
+    <button type="submit" class="btn btn-primary">Créer</button>
+</form>

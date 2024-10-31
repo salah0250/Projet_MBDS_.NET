@@ -1,23 +1,147 @@
-﻿@model List<Gauniv.WebServer.Data.Game>
-@using X.PagedList.Mvc.Core;
-@using X.PagedList;
-@{
-    ViewData["Title"] = "View";
-}
-<link href="~/Content/PagedList.css" rel="stylesheet" type="text/css" />
-<h1>View</h1>
+﻿@using Microsoft.AspNetCore.Identity
+@using Gauniv.WebServer.Data
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@model IEnumerable<Gauniv.WebServer.Data.Game>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Id)
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<!-- Ajout des liens CDN directement -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="game-store-container">
+    <!-- Header avec navigation et boutons d'administration -->
+    <header class="store-header">
+        <h2 class="store-title">Découvrez nos jeux</h2>
+        <div class="admin-actions">
+            <a asp-action="Create" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus-circle"></i> Ajouter un jeu
+            </a>
+            @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+            {
+                <a href="/Admin/Index" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-users-cog"></i> Gérer les utilisateurs
+                </a>
+            }
+        </div>
+    </header>
+
+    <!-- Barre de recherche et filtres -->
+    <div class="search-filters-container">
+        <form method="get" action="@Url.Action("Index")" class="filters-form">
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text"
+                       name="searchTerm"
+                       id="searchTerm"
+                       class="search-input"
+                       placeholder="Rechercher un jeu..."
+                       value="@HttpContextAccessor.HttpContext.Request.Query["searchTerm"]" />
+            </div>
+
+            <div class="filters-group">
+                <div class="price-filters">
+                    <input type="number"
+                           step="0.01"
+                           name="minPrice"
+                           id="minPrice"
+                           class="price-input"
+                           placeholder="Prix min"
+                           value="@HttpContextAccessor.HttpContext.Request.Query["minPrice"]" />
+                    <span class="price-separator">-</span>
+                    <input type="number"
+                           step="0.01"
+                           name="maxPrice"
+                           id="maxPrice"
+                           class="price-input"
+                           placeholder="Prix max"
+                           value="@HttpContextAccessor.HttpContext.Request.Query["maxPrice"]" />
+                </div>
+
+                <select name="category"
+                        id="category"
+                        class="category-select"
+                        asp-items="Html.GetEnumSelectList<Category>()">
+                    <option value="">Toutes les catégories</option>
+                </select>
+
+                <div class="filter-buttons">
+                    <button type="submit" class="filter-button">
+                        <i class="fas fa-filter"></i> Filtrer
+                    </button>
+                    <a href="@Url.Action("Index")" class="reset-button">
+                        <i class="fas fa-times"></i> Réinitialiser
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Grille de jeux -->
+    <div class="games-grid">
+        @foreach (var game in Model)
+        {
+            <div class="game-card">
+                <div class="game-card-image">
+                    <!-- Remplacer par l'image du jeu si disponible -->
+                    <img src="@(game.Image != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(game.Image)}" : "/images/default-placeholder.png")" alt="@game.Title" />
+                </div>
+                <div class="game-card-content">
+                    <h3 class="game-title">@game.Title</h3>
+                    <div class="game-category">
+                        <span class="category-badge">@game.Category</span>
+                    </div>
+                    <p class="game-description">@game.Description</p>
+                    <div class="game-meta">
+                        <span class="release-date">
+                            <i class="far fa-calendar-alt"></i>
+                            @game.ReleaseDate.ToShortDateString()
+                        </span>
+                        <span class="game-price">@game.Price €</span>
+                    </div>
+
+                    <div class="game-actions">
+                        @{
+                            var isAdmin = User.IsInRole("Admin");
+                            var userId = UserManager.GetUserId(User);
+                            var userOwnsGame = game.UserGames.Any(ug => ug.UserId == userId);
+                        }
+
+
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            if (userOwnsGame)
+                            {
+                             
+                                <p class="text-capitalize">Présent dans la bibliothèque.</p>
+                            }
+                            else
+                            {
+                                <!-- Bouton "Acheter" si l'utilisateur ne possède pas encore le jeu -->
+                                <a asp-action="Purchase" asp-route-id="@game.Id" class="btn-purchase">
+                                    <i class="fas fa-shopping-cart"></i> Acheter
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <!-- Demander de se connecter pour acheter -->
+                            <p class="text-warning">Veuillez vous connecter pour acheter ce jeu.</p>
+                        }
+
+                        <!-- Actions d'administration -->
+                        <div class="admin-buttons">
+                            <a asp-action="Edit" asp-route-id="@game.Id" class="btn-edit">
+                                <i class="fas fa-edit"></i> 
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@game.Id" class="btn-delete">
+                                <i class="fas fa-trash"></i> 
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
