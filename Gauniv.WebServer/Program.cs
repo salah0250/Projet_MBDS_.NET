@@ -1,9 +1,11 @@
 using Gauniv.WebServer.Data;
 using Gauniv.WebServer.Dtos;
+using Gauniv.WebServer.Mappings;
 using Gauniv.WebServer.Security;
 using Gauniv.WebServer.Services;
 using Gauniv.WebServer.Websocket;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -91,7 +93,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<User>(options => {
     options.SignIn.RequireConfirmedAccount = false;
     options.Password.RequireDigit = false;
-    options.Password.RequiredLength = 1;
+    options.Password.RequiredLength = 6;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
@@ -103,14 +105,32 @@ builder.Services.AddOpenApi(options =>
 });
 builder.Services.AddRazorPages();
 
-builder.Services.AddAutoMapper(typeof(MappingProfile));
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddAutoMapper(typeof(GameProfile));
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<OnlineService>();
 builder.Services.AddHostedService<SetupService>();
 // var redis = new  RedisService(redisConnectionString);
 // builder.Services.AddSingleton(redis);
 
+// Configure FormOptions for file upload size
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 104857600; // Set the limit to 100 MB
+});
+
 var app = builder.Build();
+
+app.Use(async (context, next) =>
+{
+    var maxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
+    if (maxRequestBodySizeFeature != null)
+    {
+        maxRequestBodySizeFeature.MaxRequestBodySize = 104857600; // Set the limit to 100 MB
+    }
+    await next.Invoke();
+});
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -129,15 +149,13 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
+app.UseStaticFiles();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapRazorPages();
 
 app.MapOpenApi();
 app.MapGroup("Bearer").MapIdentityApi<User>();
@@ -146,4 +164,29 @@ app.UseSwaggerUI(options =>
     options.SwaggerEndpoint("/openapi/v1.json", "v1");
 });
 app.MapHub<OnlineHub>("/online");
+
+// Call the CreateRoles method within a scope
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await CreateRoles(services);
+}
 app.Run();
+
+async Task CreateRoles(IServiceProvider serviceProvider)
+{
+    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    string[] roleNames = { "Admin", "User" }; // Example roles
+    IdentityResult roleResult;
+
+    foreach (var roleName in roleNames)
+    {
+        var roleExist = await roleManager.RoleExistsAsync(roleName);
+        if (!roleExist)
+        {
+            // Create the roles and seed them to the database
+            roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+}
