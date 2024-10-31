@@ -39,15 +39,22 @@ namespace Gauniv.Client
             if (_authService.IsConnected)
             {
                 // Show main content
-                await Shell.Current.GoToAsync("//games");
-                Shell.Current.FlyoutBehavior = FlyoutBehavior.Flyout;
+                if (Shell.Current != null)
+                {
+                    await Shell.Current.GoToAsync("//games");
+                    Shell.Current.FlyoutBehavior = FlyoutBehavior.Flyout;
+                }
             }
             else
             {
                 // Show login
-                await Shell.Current.GoToAsync("//login");
-                Shell.Current.FlyoutBehavior = FlyoutBehavior.Disabled;
+                if (Shell.Current != null)
+                {
+                    await Shell.Current.GoToAsync("//login");
+                    Shell.Current.FlyoutBehavior = FlyoutBehavior.Disabled;
+                }
             }
         }
+
     }
 }
