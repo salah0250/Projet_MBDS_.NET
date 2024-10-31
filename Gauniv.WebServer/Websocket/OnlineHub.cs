@@ -1,78 +1,109 @@
-﻿using Gauniv.WebServer.Data;
-using Gauniv.WebServer.Services;
-using Microsoft.AspNetCore.Identity;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
+using Gauniv.WebServer.Data;
 
-public class OnlineStatus
-{
-    public User User { get; set; }
-    public int Count { get; set; }
-}
 
 namespace Gauniv.WebServer.Websocket
 {
+    public class OnlineStatus
+    {
+        public string UserId { get; set; }
+        public string UserName { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int Count { get; set; }
+    }
+
     public class OnlineHub : Hub
     {
-        public static Dictionary<string, OnlineStatus> ConnectedUsers = new();
-        private readonly UserManager<User> userManager;
-        private readonly RedisService redisService;
+        private static readonly Dictionary<string, OnlineStatus> _connectedUsers = new();
+        private static readonly object _lock = new();
+        private readonly UserManager<User> _userManager;
+        private readonly IHubContext<OnlineHub> _hubContext;
 
-        public OnlineHub(UserManager<User> userManager, RedisService redisService)
+        public OnlineHub(
+            UserManager<User> userManager,
+            IHubContext<OnlineHub> hubContext)
         {
-            this.userManager = userManager;
-            this.redisService = redisService;
+            _userManager = userManager;
+            _hubContext = hubContext;
+        }
+
+        // Propriété statique publique pour accéder aux utilisateurs connectés
+        public static IReadOnlyDictionary<string, OnlineStatus> ConnectedUsers
+        {
+            get
+            {
+                lock (_lock)
+                {
+                    return new Dictionary<string, OnlineStatus>(_connectedUsers);
+                }
+            }
         }
 
         public override async Task OnConnectedAsync()
         {
-            var userId = Context.UserIdentifier; // Assurez-vous que l'ID utilisateur est correctement configuré
-            var user = await userManager.FindByIdAsync(userId); // Récupération de l'utilisateur
+            var userId = Context.UserIdentifier;
+            if (string.IsNullOrEmpty(userId)) return;
 
-            if (user != null)
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return;
+
+            lock (_lock)
             {
-                // Mettre à jour le statut en ligne
-                if (ConnectedUsers.ContainsKey(userId))
+                if (_connectedUsers.ContainsKey(userId))
                 {
-                    ConnectedUsers[userId].Count++;
+                    _connectedUsers[userId].Count++;
                 }
                 else
                 {
-                    ConnectedUsers[userId] = new OnlineStatus { User = user, Count = 1 };
+                    _connectedUsers[userId] = new OnlineStatus
+                    {
+                        UserId = userId,
+                        UserName = user.UserName,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        Count = 1
+                    };
                 }
-
-                // Envoyer la liste mise à jour des utilisateurs en ligne
-                await SendOnlineUsers();
             }
 
+            await BroadcastOnlineUsers();
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var userId = Context.UserIdentifier; // Assurez-vous que l'ID utilisateur est correctement configur
+            var userId = Context.UserIdentifier;
+            if (string.IsNullOrEmpty(userId)) return;
 
-            if (ConnectedUsers.ContainsKey(userId))
+            lock (_lock)
             {
-                ConnectedUsers[userId].Count--;
-
-                // Supprimer l'utilisateur si le compteur atteint zéro
-                if (ConnectedUsers[userId].Count <= 0)
+                if (_connectedUsers.ContainsKey(userId))
                 {
-                    ConnectedUsers.Remove(userId);
-                }
+                    _connectedUsers[userId].Count--;
 
-                // Envoyer la liste mise à jour des utilisateurs en ligne
-                await SendOnlineUsers();
+                    if (_connectedUsers[userId].Count <= 0)
+                    {
+                        _connectedUsers.Remove(userId);
+                    }
+                }
             }
 
+            await BroadcastOnlineUsers();
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task SendOnlineUsers()
+        private async Task BroadcastOnlineUsers()
         {
-            await Clients.All.SendAsync("ReceiveOnlineUsers", ConnectedUsers);
+            Dictionary<string, OnlineStatus> currentUsers;
+            lock (_lock)
+            {
+                currentUsers = new Dictionary<string, OnlineStatus>(_connectedUsers);
+            }
+
+            await _hubContext.Clients.All.SendAsync("ReceiveOnlineUsers", currentUsers);
         }
     }
 }

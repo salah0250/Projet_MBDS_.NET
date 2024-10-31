@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace Gauniv.WebServer.Data
 {
     public class ApplicationDbContext : IdentityDbContext<User>
     {
+        public DbSet<Friendship> Friendships { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -32,6 +35,21 @@ namespace Gauniv.WebServer.Data
                 .HasOne(ug => ug.Game)
                 .WithMany(g => g.UserGames)
                 .HasForeignKey(ug => ug.GameId);
+
+            builder.Entity<Friendship>()
+           .HasKey(f => new { f.RequesterId, f.AddresseeId });
+
+            builder.Entity<Friendship>()
+                .HasOne(f => f.Requester)
+                .WithMany()
+                .HasForeignKey(f => f.RequesterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Friendship>()
+                .HasOne(f => f.Addressee)
+                .WithMany()
+                .HasForeignKey(f => f.AddresseeId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
 

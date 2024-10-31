@@ -1,0 +1,150 @@
+﻿@model IEnumerable<Gauniv.WebServer.Controllers.PlayerViewModel>
+
+<h1>My Friends List</h1>
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="friendsList">
+            <!-- This will be populated dynamically -->
+        </tbody>
+    </table>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Styles {
+    <style>
+        .badge {
+            padding: 0.5em 1em;
+            border-radius: 0.25rem;
+            font-weight: 500;
+        }
+
+        .bg-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .bg-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+            .btn-danger:hover {
+                background-color: #c82333;
+                border-color: #bd2130;
+            }
+    </style>
+}
+
+@section Scripts {
+    <script src="../wwwroot/js/signalr/dist/browser/signalr.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/online")
+                .withAutomaticReconnect([0, 2000, 5000, 10000, null])
+                .build();
+
+            async function loadFriends() {
+                try {
+                    const response = await fetch('/Players/GetFriends');
+                    const friends = await response.json();
+                    updateFriendsList(friends);
+                } catch (error) {
+                    console.error('Error loading friends:', error);
+                }
+            }
+
+            function updateFriendsList(friends) {
+                const friendsList = document.getElementById('friendsList');
+                friendsList.innerHTML = friends.map(friend => `
+                    <tr data-user-id="${friend.id}">
+                        <td>${friend.userName}</td>
+                        <td>${friend.firstName} ${friend.lastName}</td>
+                        <td class="status">
+                            <span class="badge ${friend.isOnline ? 'bg-success' : 'bg-secondary'}">
+                                ${friend.isOnline ? 'Online' : 'Offline'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-danger remove-friend"
+                                    data-user-id="${friend.id}">
+                                Remove Friend
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Remove friend function
+            async function removeFriend(userId) {
+                try {
+                    const response = await fetch('/Players/RemoveFriend', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: JSON.stringify({ friendId: userId })
+                    });
+
+                    if (response.ok) {
+                        loadFriends();
+                    } else {
+                        alert('Failed to remove friend.');
+                    }
+                } catch (error) {
+                    console.error('Error removing friend:', error);
+                    alert('Error removing friend. Please try again.');
+                }
+            }
+
+            // Event listener for Remove Friend buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-friend')) {
+                    const userId = e.target.getAttribute('data-user-id');
+                    if (confirm('Are you sure you want to remove this friend?')) {
+                        removeFriend(userId);
+                    }
+                }
+            });
+
+            // SignalR event handlers
+            connection.on("FriendsListUpdated", updateFriendsList);
+
+            // Connection handling with retry logic
+            async function startConnection() {
+                try {
+                    await connection.start();
+                    console.log("SignalR Connected");
+                    loadFriends(); // Load friends after connection is established
+                } catch (err) {
+                    console.error("SignalR Connection Error:", err);
+                    setTimeout(startConnection, 5000);
+                }
+            }
+
+            connection.onclose(async () => {
+                console.log("SignalR Disconnected");
+                await startConnection();
+            });
+
+            // Start the initial connection
+            startConnection();
+        });
+    </script>
+}
