@@ -1,9 +1,14 @@
-namespace Gauniv.Client.Pages;
+using Gauniv.Client.Services;
+using Gauniv.Client.ViewModel;
 
-public partial class Index : ContentPage
+namespace Gauniv.Client.Pages
 {
-	public Index()
-	{
-		InitializeComponent();
-	}
+    public partial class Index : ContentPage
+    {
+        public Index(GameService gameService)
+        {
+            InitializeComponent(); // This calls the auto-generated method from XAML
+            BindingContext = new IndexViewModel(gameService); // Set the ViewModel manually
+        }
+    }
 }

@@ -24,6 +24,15 @@ namespace Gauniv.Client
             builder.Services.AddSingleton<AuthService>();
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddSingleton<AppShell>();
+            // Register HttpClient as a singleton
+            builder.Services.AddSingleton<HttpClient>();
+
+            // Register GameService as a singleton
+            builder.Services.AddSingleton<GameService>();
+
+            // Register ViewModel
+            builder.Services.AddTransient<IndexViewModel>();
+
 #endif
 
             var app = builder.Build();

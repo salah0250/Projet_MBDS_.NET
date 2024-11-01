@@ -23,7 +23,7 @@
 
     <!-- Main App Content - Only visible when logged in -->
     <FlyoutItem Title="Games" Route="games">
-        <ShellContent ContentTemplate="{DataTemplate local:MyGames}" />
+        <ShellContent ContentTemplate="{DataTemplate local:Index}" />
     </FlyoutItem>
 
     <FlyoutItem Title="Profile" Route="profile">
