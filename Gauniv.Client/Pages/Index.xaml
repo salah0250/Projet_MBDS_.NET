@@ -2,11 +2,27 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:model="clr-namespace:Gauniv.Client.Data"
              x:Class="Gauniv.Client.Pages.Index"
              Title="Index"
-             x:DataType="vm:IndexViewModel"
-             BindingContext="{vm:IndexViewModel}">
-    <Label Text="List des jeux" />
+             x:DataType="vm:IndexViewModel">
+
+    <StackLayout>
+        <Label Text="List of Games" FontSize="24" HorizontalOptions="Center" />
+        <CollectionView ItemsSource="{Binding Games}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="model:Game">
+                    <StackLayout Padding="10">
+                        <Image Source="{Binding ImageSource}" 
+                               HeightRequest="200" 
+                               Aspect="AspectFill" 
+                               HorizontalOptions="Center" />
+                        <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="{Binding Description}" FontSize="14" />
+                        <Label Text="{Binding Price, StringFormat='Price: {0:C}'}" FontSize="14" />
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </StackLayout>
 </ContentPage>
