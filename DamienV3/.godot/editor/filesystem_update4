@@ -1,0 +1,10 @@
+res://Scenes/Game/MainGameScene.tscn
+res://Scenes/UI/LoginScreen.tscn
+res://Scenes/UI/NameSelectionScreen.tscn
+res://Scenes/UI/ReadyCheckScreen.tscn
+res://Scenes/Network/NetworkManager.tscn
+res://Scenes/UI/LoginScreen.cs
+res://Scenes/Network/NetworkManager.cs
+res://Scenes/Game/MainGameScene.cs
+res://Scenes/UI/ReadyCheckScreen.cs
+res://Scenes/UI/NameSelectionScreen.cs

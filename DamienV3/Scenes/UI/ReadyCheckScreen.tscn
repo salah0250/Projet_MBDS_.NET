@@ -1,0 +1,40 @@
+[gd_scene load_steps=5 format=3 uid="uid://df7v4xexnupuo"]
+
+[ext_resource type="Script" path="res://Scenes/UI/ReadyCheckScreen.cs" id="1_52lbg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jbifx"]
+bg_color = Color(1.02278e-07, 0.151302, 0.223531, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_umj7a"]
+bg_color = Color(0.039, 0.78, 0.1625, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4hbo5"]
+
+[node name="ReadyCheckScreen" type="Node2D"]
+
+[node name="Bg" type="Panel" parent="."]
+offset_right = 448.0
+offset_bottom = 512.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_jbifx")
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_52lbg")
+
+[node name="ReadyButton" type="Button" parent="Control"]
+layout_mode = 0
+offset_left = 128.0
+offset_top = 192.0
+offset_right = 320.0
+offset_bottom = 320.0
+theme_override_styles/hover = SubResource("StyleBoxFlat_umj7a")
+theme_override_styles/normal = SubResource("StyleBoxFlat_4hbo5")
+text = "Ready"
+
+[node name="WaitingLabel" type="Label" parent="Control"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
