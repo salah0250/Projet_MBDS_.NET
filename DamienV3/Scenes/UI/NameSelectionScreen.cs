@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Threading.Tasks;
 
 public partial class NameSelectionScreen : Control
@@ -32,35 +33,30 @@ public partial class NameSelectionScreen : Control
 			// Initialize TaskCompletionSource to wait for a response
 			nameValidationResponse = new TaskCompletionSource<bool>();
 
-			// Créez un objet Command pour la validation du nom
-			var nameCommand = new Command("NAME");
-			nameCommand.Data["playerName"] = playerName;
-
-			// Sérialisez la commande et envoyez-la
-			byte[] nameMessage = SerializationUtils.SerializeMessage(nameCommand);
+			// Construct a plain text message for name validation
+			string nameMessage = $"NAME {playerName}";
 			await networkManager.SendMessageAsync(nameMessage);
 
-			// Attendre la réponse du serveur
+			// Await server response on name validation
 			bool nameIsValid = await nameValidationResponse.Task;
 
 			if (nameIsValid)
 			{
-				// Le nom est valide, passer à l'écran suivant
+				// Name is valid, proceed to the next screen
 				GetTree().ChangeSceneToFile("res://Scenes/UI/ReadyCheckScreen.tscn");
 			}
 			else
 			{
-				// Affiche un message d'erreur si le nom est invalide
+				// Display an error message if the name is invalid
 				ShowNameError("Le nom choisi est invalide ou déjà utilisé. Veuillez choisir un autre nom.");
 			}
 		}
 		else
 		{
-			// Affiche une erreur si le champ du nom est vide
+			// Display an error if the name field is empty
 			ShowNameError("Veuillez entrer un nom pour votre joueur.");
 		}
 	}
-
 
 	private void OnNetworkMessageReceived(string message)
 	{
@@ -79,7 +75,7 @@ public partial class NameSelectionScreen : Control
 	{
 		var errorDialog = new AcceptDialog();
 		errorDialog.DialogText = message;
-		errorDialog.Title = "Erreur de selection du nom";
+		errorDialog.Title = "Erreur de sélection du nom";
 		AddChild(errorDialog);
 		errorDialog.PopupCentered();
 	}

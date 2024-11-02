@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Text;
 
 public partial class MainGameScene : Node2D
 {
@@ -60,12 +61,8 @@ public partial class MainGameScene : Node2D
 
 		serverResponse = new TaskCompletionSource<string>();
 
-		// Créez un objet Command pour la requête de rôle
-		var command = new Command("ROLE_REQUEST");
-
-		// Sérialisez le message avec MessagePack
-		byte[] message = SerializationUtils.SerializeMessage(command);
-		await networkManager.SendMessageAsync(message);
+		// Send a plain text role request
+		await networkManager.SendMessageAsync("ROLE_REQUEST");
 
 		GD.Print("Role request sent to server. Waiting for response...");
 
@@ -116,9 +113,7 @@ public partial class MainGameScene : Node2D
 
 		if (isRoleAssigned)
 		{
-			var readyCommand = new Command("READY");
-			byte[] readyMessage = SerializationUtils.SerializeMessage(readyCommand);
-			await networkManager.SendMessageAsync(readyMessage);
+			await networkManager.SendMessageAsync("READY"); // Send a simple "READY" text message
 		}
 	}
 
@@ -135,12 +130,9 @@ public partial class MainGameScene : Node2D
 
 		SetCellColor(targetX, targetY, Colors.Red);
 
-		// Créez et envoyez la commande TARGET avec les coordonnées
-		var targetCommand = new Command("TARGET");
-		targetCommand.Data["x"] = targetX.ToString();
-		targetCommand.Data["y"] = targetY.ToString();
-		byte[] targetMessage = SerializationUtils.SerializeMessage(targetCommand);
-		await networkManager.SendMessageAsync(targetMessage);
+		// Send TARGET command as plain text for simplicity
+		string targetCommand = $"TARGET {targetX} {targetY}";
+		await networkManager.SendMessageAsync(targetCommand);
 
 		startTime = (float)Time.GetTicksMsec() / 1000.0f;
 		timer.WaitTime = 5.0f;
@@ -148,32 +140,42 @@ public partial class MainGameScene : Node2D
 		UpdateTimerLabel((float)timer.WaitTime);
 	}
 
-
 	private void UpdateTimerLabel(float timeLeft)
 	{
 		timerLabel.Text = $"Temps restant: {timeLeft:F1}s";
 	}
 
-	private void OnNetworkMessageReceived(byte[] data)
+	private void OnNetworkMessageReceived(string message)
 	{
+		// Handling plain text messages for login/role phase
+		if (message.StartsWith("ROLE_MJ") || message.StartsWith("ROLE_PLAYER"))
+		{
+			ProcessRoleResponse(message);
+			return;
+		}
+
+		// Check if message starts with TARGET or RESULT for plain-text
+		if (message.StartsWith("TARGET"))
+		{
+			var parts = message.Split(' ');
+			int targetX = int.Parse(parts[1]);
+			int targetY = int.Parse(parts[2]);
+			HandleTargetMessage(targetX, targetY);
+			return;
+		}
+
+		if (message.StartsWith("RESULT"))
+		{
+			DisplayResults(message.Substring(7)); // Assuming results data follows "RESULT "
+			return;
+		}
+
+		// Deserialize other MessagePack-based messages
+		byte[] data = Encoding.UTF8.GetBytes(message);
 		var command = SerializationUtils.DeserializeMessage(data);
 
 		switch (command.Type)
 		{
-			case "ROLE_MJ":
-				ProcessRoleResponse(command.Data["response"].ToString());
-				break;
-
-			case "TARGET":
-				int targetX = int.Parse(command.Data["x"].ToString());
-				int targetY = int.Parse(command.Data["y"].ToString());
-				HandleTargetMessage(targetX, targetY);
-				break;
-
-			case "RESULT":
-				DisplayResults(command.Data["results"]);
-				break;
-
 			case "START_GAME":
 				HandleStartGame();
 				break;
@@ -184,31 +186,9 @@ public partial class MainGameScene : Node2D
 		}
 	}
 
-	private void DisplayResults(object resultsData)
+	private void DisplayResults(string resultsData)
 	{
-		// Assuming resultsData is a list of dictionaries or similar structure
-		if (resultsData is IEnumerable<object> resultsList)
-		{
-			string resultsText = "Resultats:\n";
-
-			foreach (var result in resultsList)
-			{
-				if (result is Dictionary<string, object> resultDict)
-				{
-					// Assuming "Name" and "Time" are keys in the result dictionary
-					string playerName = resultDict["Name"].ToString();
-					string responseTime = resultDict["Time"].ToString();
-
-					resultsText += $"{playerName}: {responseTime} s\n";
-				}
-			}
-
-			resultLabel.Text = resultsText;
-		}
-		else
-		{
-			GD.PrintErr("Invalid results data format.");
-		}
+		resultLabel.Text = $"Resultats:\n{resultsData}";
 	}
 
 	private void HandleStartGame()
@@ -222,15 +202,6 @@ public partial class MainGameScene : Node2D
 		targetCell = new Vector2(x, y);
 		isTargetSelected = true;
 		SetCellColor(x, y, Colors.Red);
-	}
-
-	private void HandleClick(string[] parts)
-	{
-		if (parts.Length >= 3 && float.TryParse(parts[2], out float time))
-		{
-			resultLabel.Text = $"{parts[1]} a gagne ! Temps : {time:F2} s";
-			timer.Stop();
-		}
 	}
 
 	private void SetupGrid(int width, int height)
@@ -283,16 +254,15 @@ public partial class MainGameScene : Node2D
 		{
 			float responseTime = ((float)Time.GetTicksMsec() / 1000.0f) - startTime;
 
-			// Créez et envoyez la commande CLICK avec le temps de réponse
+			// Send CLICK command with MessagePack for gameplay
 			var clickCommand = new Command("CLICK");
 			clickCommand.Data["sessionID"] = sessionID;
-			clickCommand.Data["responseTime"] = responseTime.ToString(); // Conversion du float en string
+			clickCommand.Data["responseTime"] = responseTime.ToString();
 			byte[] clickMessage = SerializationUtils.SerializeMessage(clickCommand);
-			await networkManager.SendMessageAsync(clickMessage);
+			string clickMessageString = Encoding.UTF8.GetString(clickMessage);
+			await networkManager.SendMessageAsync(clickMessageString);
 		}
 	}
-
-
 
 	private void OnTimerTimeout()
 	{

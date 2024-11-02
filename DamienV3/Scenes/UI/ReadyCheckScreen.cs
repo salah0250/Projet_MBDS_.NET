@@ -1,4 +1,5 @@
 using Godot;
+using System;
 using System.Threading.Tasks;
 
 public partial class ReadyCheckScreen : Control
@@ -22,20 +23,15 @@ public partial class ReadyCheckScreen : Control
 
 	private async void OnReadyButtonPressed()
 	{
-		// Cr�ez un objet Command pour indiquer que le joueur est pr�t
-		var readyCommand = new Command("READY");
-
-		// S�rialisez le message avec MessagePack
-		byte[] readyMessage = SerializationUtils.SerializeMessage(readyCommand);
-		await networkManager.SendMessageAsync(readyMessage);
-
-		// Afficher un message d'attente pour le joueur
+		// Send a simple "READY" message to the server
+		await networkManager.SendMessageAsync("READY");
 		ShowWaitingMessage("En attente des autres joueurs...");
 	}
 
 	private void OnNetworkMessageReceived(string message)
 	{
-		if (message == "ALL_READY" || message == "START_GAME")
+		// Check if the server notified that all players are ready
+		if (message == "START_GAME")
 		{
 			// All players are ready, switch to the main game scene
 			GetTree().ChangeSceneToFile("res://Scenes/Game/MainGameScene.tscn");

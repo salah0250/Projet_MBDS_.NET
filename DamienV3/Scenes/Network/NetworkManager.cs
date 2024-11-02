@@ -7,7 +7,7 @@ using System;
 public partial class NetworkManager : Node
 {
 	[Signal]
-	public delegate void MessageReceivedEventHandler(byte[] data);
+	public delegate void MessageReceivedEventHandler(string data);
 
 	private TcpClient client;
 	private NetworkStream stream;
@@ -40,7 +40,7 @@ public partial class NetworkManager : Node
 		}
 	}
 
-	public async Task SendMessageAsync(byte[] message)
+	public async Task SendMessageAsync(string message)
 	{
 		if (!isConnected || stream == null)
 		{
@@ -51,17 +51,11 @@ public partial class NetworkManager : Node
 
 		try
 		{
-			// Add message length prefix
-			int messageLength = message.Length;
-			byte[] lengthPrefix = BitConverter.GetBytes(messageLength);
-
-			// First send length
-			await stream.WriteAsync(lengthPrefix, 0, 4);
-			// Then send message
-			await stream.WriteAsync(message, 0, message.Length);
+			byte[] messageBytes = Encoding.UTF8.GetBytes(message + "\n"); // Adding newline as delimiter
+			await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
 			await stream.FlushAsync();
 
-			GD.Print($"[DEBUG] Message sent to server. Size: {message.Length} bytes");
+			GD.Print($"[DEBUG] Plain text message sent to server: {message}");
 		}
 		catch (Exception ex)
 		{
@@ -73,45 +67,28 @@ public partial class NetworkManager : Node
 
 	private async Task ListenForMessages()
 	{
-		byte[] lengthBuffer = new byte[4];
+		byte[] buffer = new byte[1024];
+		StringBuilder messageBuilder = new StringBuilder();
 
 		while (isConnected)
 		{
 			try
 			{
-				// Read message length first
-				int bytesRead = await stream.ReadAsync(lengthBuffer, 0, 4);
-				if (bytesRead < 4)
+				int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+				if (bytesRead == 0)
 				{
-					GD.PrintErr("[DEBUG] Failed to read message length");
+					GD.PrintErr("[DEBUG] Connection closed by server.");
 					break;
 				}
 
-				int messageLength = BitConverter.ToInt32(lengthBuffer, 0);
-				byte[] messageBuffer = new byte[messageLength];
+				messageBuilder.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
 
-				// Read the full message
-				bytesRead = await stream.ReadAsync(messageBuffer, 0, messageLength);
-				if (bytesRead < messageLength)
+				if (messageBuilder.ToString().Contains("\n"))
 				{
-					GD.PrintErr("[DEBUG] Incomplete message received");
-					break;
-				}
-
-				GD.Print($"[DEBUG] Received message of {bytesRead} bytes");
-
-				// Process the message
-				try
-				{
-					Command deserializedMessage = SerializationUtils.DeserializeMessage(messageBuffer);
-					GD.Print($"[DEBUG] Deserialized message type: {deserializedMessage.Type}");
-
-					// Emit the signal with the original message bytes
-					EmitSignal(SignalName.MessageReceived, messageBuffer);
-				}
-				catch (Exception ex)
-				{
-					GD.PrintErr($"[DEBUG] Error deserializing message: {ex.Message}");
+					string fullMessage = messageBuilder.ToString().Trim();
+					messageBuilder.Clear();
+					GD.Print($"[DEBUG] Full message received: {fullMessage}");
+					EmitSignal(nameof(MessageReceived), fullMessage);
 				}
 			}
 			catch (Exception ex)

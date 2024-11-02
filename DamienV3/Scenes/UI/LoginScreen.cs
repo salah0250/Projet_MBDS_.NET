@@ -1,6 +1,5 @@
 using Godot;
 using System.Threading.Tasks;
-using System;
 
 public partial class LoginScreen : Control
 {
@@ -15,15 +14,18 @@ public partial class LoginScreen : Control
 		usernameLineEdit = GetNode<LineEdit>("UsernameLineEdit");
 		passwordLineEdit = GetNode<LineEdit>("PasswordLineEdit");
 		loginButton = GetNode<Button>("LoginButton");
-		
+
 		// Access the NetworkManager (singleton) for network communication
 		networkManager = GetNode<NetworkManager>("/root/NetworkManager");
-		
+
 		// Connect the button
 		loginButton.Pressed += OnLoginButtonPressed;
-		
-		// Connect to the NetworkManager's MessageReceived signal
-		networkManager.MessageReceived += OnNetworkMessageReceived;
+
+		// Connect to the MessageReceived signal
+		networkManager.Connect(nameof(NetworkManager.MessageReceived),
+			new Callable(this, nameof(OnNetworkMessageReceived)));
+
+		GD.Print("[DEBUG] Connected to MessageReceived signal in LoginScreen.");
 	}
 
 	private async void OnLoginButtonPressed()
@@ -43,37 +45,31 @@ public partial class LoginScreen : Control
 		{
 			loginResponseReceived = new TaskCompletionSource<bool>();
 
-			// Create and send the login command
-			var command = new Command("LOGIN");
-			command.Data["username"] = username;
-			command.Data["password"] = password;
-
-			byte[] message = SerializationUtils.SerializeMessage(command);
-			await networkManager.SendMessageAsync(message);
+			// Send plain text login request
+			string loginRequest = $"LOGIN {username} {password}";
+			await networkManager.SendMessageAsync(loginRequest);
+			GD.Print("[DEBUG] Login message sent to server.");
 
 			// Wait for server response with a timeout
-			using var cts = new System.Threading.CancellationTokenSource(5000); // 5 second timeout
-			
+			using var cts = new System.Threading.CancellationTokenSource(5000); // 5-second timeout
 			bool loginSuccess = await loginResponseReceived.Task.WaitAsync(cts.Token);
-			
+
 			if (loginSuccess)
 			{
-				GD.Print("[DEBUG] Login successful, changing scene...");
+				GD.Print("[DEBUG] Authentication successful. Switching to NameSelectionScreen.");
 				GetTree().ChangeSceneToFile("res://Scenes/UI/NameSelectionScreen.tscn");
 			}
 			else
 			{
-				GD.Print("[DEBUG] Login failed, showing error message");
 				ShowErrorMessage("Nom d'utilisateur ou mot de passe incorrect.");
 			}
 		}
-		catch (OperationCanceledException)
+		catch (System.TimeoutException)
 		{
 			ShowErrorMessage("Le serveur ne répond pas. Veuillez réessayer plus tard.");
 		}
-		catch (Exception ex)
+		catch (System.Exception ex)
 		{
-			GD.PrintErr($"[DEBUG] Login error: {ex.Message}");
 			ShowErrorMessage($"Une erreur est survenue: {ex.Message}");
 		}
 		finally
@@ -82,34 +78,29 @@ public partial class LoginScreen : Control
 		}
 	}
 
-	private void OnNetworkMessageReceived(byte[] data)
+	private void OnNetworkMessageReceived(string message)
 	{
-		try
+		if (loginResponseReceived == null)
 		{
-			Command response = SerializationUtils.DeserializeMessage(data);
-			GD.Print($"[DEBUG] Received message type: {response.Type}");
-
-			switch (response.Type)
-			{
-				case "AUTH_SUCCESS":
-					GD.Print("[DEBUG] Authentication successful");
-					loginResponseReceived?.TrySetResult(true);
-					break;
-
-				case "AUTH_FAILED":
-					GD.Print("[DEBUG] Authentication failed");
-					loginResponseReceived?.TrySetResult(false);
-					break;
-
-				default:
-					GD.Print($"[DEBUG] Unexpected message type: {response.Type}");
-					break;
-			}
+			GD.Print("[DEBUG] loginResponseReceived is null. Exiting message handling.");
+			return;
 		}
-		catch (Exception ex)
+
+		GD.Print($"[DEBUG] Received response: {message}");
+
+		if (message.Trim() == "AUTH_SUCCESS")
 		{
-			GD.PrintErr($"[DEBUG] Error processing message: {ex.Message}");
-			loginResponseReceived?.TrySetException(ex);
+			GD.Print("[DEBUG] AUTH_SUCCESS received. Transitioning to NameSelectionScreen.");
+			loginResponseReceived.TrySetResult(true);
+		}
+		else if (message.Trim() == "AUTH_FAILED")
+		{
+			GD.Print("[DEBUG] AUTH_FAILED received.");
+			loginResponseReceived.TrySetResult(false);
+		}
+		else
+		{
+			GD.PrintErr($"[DEBUG] Unknown response received: {message}");
 		}
 	}
 
@@ -120,16 +111,13 @@ public partial class LoginScreen : Control
 		errorDialog.Title = "Erreur de Connexion";
 		AddChild(errorDialog);
 		errorDialog.PopupCentered();
+
 		errorDialog.Confirmed += () => errorDialog.QueueFree();
 		errorDialog.Canceled += () => errorDialog.QueueFree();
 	}
 
 	public override void _ExitTree()
 	{
-		if (networkManager != null)
-		{
-			networkManager.MessageReceived -= OnNetworkMessageReceived;
-		}
 		loginResponseReceived?.TrySetCanceled();
 		base._ExitTree();
 	}
