@@ -48,7 +48,11 @@ namespace Gauniv.WebServer.Mappings
                         GameId = ug.GameId,
                         Title = ug.Game != null ? ug.Game.Title : string.Empty,
                         PurchaseDate = ug.PurchaseDate
-                    }) : new List<UserGameDto>()));
+                    }) : new List<UserGameDto>()))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber));
+
 
             // UserDto -> User mapping
             CreateMap<UserDto, User>()

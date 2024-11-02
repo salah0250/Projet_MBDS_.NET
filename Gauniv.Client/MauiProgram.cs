@@ -1,7 +1,9 @@
 ﻿using CommunityToolkit.Maui;
+using Gauniv.Client.Pages;
 using Gauniv.Client.Services;
 using Gauniv.Client.ViewModel;
 using Microsoft.Extensions.Logging;
+using Windows.Networking.NetworkOperators;
 
 namespace Gauniv.Client
 {
@@ -32,6 +34,10 @@ namespace Gauniv.Client
 
             // Register ViewModel
             builder.Services.AddTransient<IndexViewModel>();
+
+            builder.Services.AddSingleton<IProfileService, ProfileService>();
+            builder.Services.AddTransient<ProfileViewModel>();
+            builder.Services.AddTransient<Profile>();
 
 #endif
 

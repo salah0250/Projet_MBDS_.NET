@@ -14,7 +14,7 @@ namespace Gauniv.Client
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            // Passer l'instance d'AuthService lors de la création d'AppShell
+            
             return new Window(new AppShell(_authService));
         }
     }
