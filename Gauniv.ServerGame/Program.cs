@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Gauniv.GameServer
+﻿namespace Gauniv.GameServer
 {
     public class Program
     {
