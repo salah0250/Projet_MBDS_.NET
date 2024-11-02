@@ -13,8 +13,8 @@ namespace Gauniv.Client.ViewModel
 {
     public partial class LoginViewModel : ObservableObject
     {
-        private readonly HttpClient _httpClient;
         private readonly AuthService _authService;
+        private readonly NetworkService _networkService;
 
         [ObservableProperty]
         private string email;
@@ -28,16 +28,7 @@ namespace Gauniv.Client.ViewModel
         public LoginViewModel(AuthService authService)
         {
             _authService = authService;
-
-            // HttpClient setup
-            var handler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-            };
-            _httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri("https://localhost")
-            };
+            _networkService = NetworkService.Instance;
         }
 
         [RelayCommand]
@@ -50,28 +41,19 @@ namespace Gauniv.Client.ViewModel
             {
                 IsBusy = true;
 
-                // Validation de l'email et du mot de passe
                 if (string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Password))
                 {
                     await Shell.Current.DisplayAlert("Error", "Please enter email and password", "OK");
                     return;
                 }
 
-                // Création des données de login
                 var loginData = new { email = Email, password = Password };
-
-                // Envoi de la requête de login
-                var response = await _httpClient.PostAsJsonAsync("/Bearer/login", loginData);
+                var response = await _networkService.httpClient.PostAsJsonAsync("/Bearer/login?useCookies=true&useSessionCookies=true", loginData);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Récupération du token (ou autre réponse)
                     var token = await response.Content.ReadAsStringAsync();
-
-                    // Stockage du token via AuthService
                     _authService.SetToken(token);
-
-                    // Navigation vers la page principale après succès
                     await Shell.Current.GoToAsync("//games");
                 }
                 else
@@ -93,7 +75,6 @@ namespace Gauniv.Client.ViewModel
         [RelayCommand]
         async Task CreateAccountAsync()
         {
-            // Open the registration URL in the default web browser
             await Browser.OpenAsync("https://localhost/Identity/Account/Register", BrowserLaunchMode.SystemPreferred);
         }
     }

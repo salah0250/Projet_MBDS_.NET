@@ -40,7 +40,8 @@ namespace Gauniv.WebServer.Api
             if (user == null)
                 return NotFound();
 
-            return Ok(_mapper.Map<UserDto>(user));
+            var userDto = _mapper.Map<UserDto>(user);
+            return Ok(userDto);
         }
 
         // GET: api/1.0.0/Users/GetUserLibrary
@@ -84,8 +85,10 @@ namespace Gauniv.WebServer.Api
                 return NotFound();
 
             // Update user properties
-            user.UserName = profileDto.UserName;
             user.Email = profileDto.Email;
+            user.FirstName = profileDto.FirstName;
+            user.LastName = profileDto.LastName;
+            user.PhoneNumber = profileDto.PhoneNumber;
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)

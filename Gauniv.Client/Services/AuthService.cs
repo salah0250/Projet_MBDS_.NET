@@ -6,9 +6,17 @@ using System.Threading.Tasks;
 
 namespace Gauniv.Client.Services
 {
+
     public class AuthService
     {
         private bool _isConnected;
+        private readonly NetworkService _networkService;
+
+        public AuthService()
+        {
+            _networkService = NetworkService.Instance;
+        }
+
         public bool IsConnected
         {
             get => _isConnected;
@@ -24,12 +32,12 @@ namespace Gauniv.Client.Services
         public void Logout()
         {
             IsConnected = false;
-            // Supprimer le token ici si nécessaire.
+            _networkService.SetAuthToken(null);
         }
 
         public void SetToken(string token)
         {
-            // Stocker le token de manière sécurisée
+            _networkService.SetAuthToken(token);
             IsConnected = true;
         }
     }

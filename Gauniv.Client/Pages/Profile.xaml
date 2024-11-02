@@ -2,13 +2,150 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
+             xmlns:local="clr-namespace:Gauniv.Client.Converters"
              x:Class="Gauniv.Client.Pages.Profile"
              Title="Profile"
-             BindingContext="{vm:ProfileViewModel}">
-    <VerticalStackLayout>
-        <Label Text="Profile" />
-    </VerticalStackLayout>
-    <!--
-    Ici on veut pouvoir changer sont nom d'utilisateur et son mot de passe ainsi que de dossier de sauvegarde des jeux
-    -->
+             BackgroundColor="{AppThemeBinding Light=#f5f5f5, Dark=#1a1a1a}">
+
+    <ContentPage.Resources>
+        <Style x:Key="EntryStyle" TargetType="Entry">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=White, Dark=#333333}" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=Black, Dark=White}" />
+            <Setter Property="PlaceholderColor" Value="Gray" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Margin" Value="0,5,0,10" />
+            <Setter Property="HeightRequest" Value="40" />
+        </Style>
+
+        <Style x:Key="LabelStyle" TargetType="Label">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=#333333, Dark=#e0e0e0}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontAttributes" Value="Bold" />
+            <Setter Property="Margin" Value="0,5,0,0" />
+        </Style>
+
+        <Style x:Key="ValueLabelStyle" TargetType="Label">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light=#666666, Dark=#bbbbbb}" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Margin" Value="0,5,0,10" />
+            <Setter Property="HeightRequest" Value="40" />
+            <Setter Property="VerticalTextAlignment" Value="Center" />
+        </Style>
+
+        <local:BoolToEditButtonTextConverter x:Key="BoolToEditButtonTextConverter"/>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <Grid Padding="10" RowSpacing="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Profile Image Section -->
+            <Frame Grid.Row="0"
+                   x:Name="ProfileFrame"
+                   WidthRequest="140" 
+                   HeightRequest="140"
+                   CornerRadius="70"
+                   IsClippedToBounds="True"
+                   BorderColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                   BackgroundColor="{AppThemeBinding Light=White, Dark=#333333}"
+                   HorizontalOptions="Center"
+                   Margin="0,10,0,10">
+                <Image Source="profile_image.png"
+                       Aspect="AspectFill"
+                       x:Name="ProfileImage">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding ChangeProfilePhotoCommand}" />
+                    </Image.GestureRecognizers>
+                </Image>
+            </Frame>
+
+            <!-- Logged Icon -->
+            <Frame Grid.Row="0"
+                   WidthRequest="30" 
+                   HeightRequest="30"
+                   CornerRadius="15"
+                   IsClippedToBounds="True"
+                   BackgroundColor="{AppThemeBinding Light=#4CAF50, Dark=#4CAF50}"
+                   HorizontalOptions="Center"
+                   VerticalOptions="End"
+                   Margin="60,-30,0,0">
+            </Frame>
+
+            <!-- Profile Info Card -->
+            <Frame Grid.Row="2"
+                   x:Name="InfoCard"
+                   BackgroundColor="{AppThemeBinding Light=White, Dark=#333333}"
+                   CornerRadius="15"
+                   Padding="15" 
+                   HasShadow="True">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Edit Mode Toggle Button -->
+                    <Button Grid.Row="0"
+                            x:Name="EditButton"
+                            Text="{Binding IsEditMode, Converter={StaticResource BoolToEditButtonTextConverter}}"
+                            Command="{Binding ToggleEditModeCommand}"
+                            BackgroundColor="Transparent"
+                            TextColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                            HorizontalOptions="End"
+                            FontSize="14"
+                            Margin="0,0,0,10"/>
+
+                    <StackLayout Grid.Row="1" Spacing="5">
+                        <Label Text="ID" Style="{StaticResource LabelStyle}" />
+                        <Label Text="{Binding Id}"
+                               Style="{StaticResource ValueLabelStyle}" />
+
+                        <Label Text="Email" Style="{StaticResource LabelStyle}" />
+                        <Grid>
+                            <Entry Text="{Binding Email}"
+                                   Style="{StaticResource EntryStyle}"
+                                   Keyboard="Email"
+                                   IsEnabled="{Binding IsEditMode}" />
+                        </Grid>
+
+                        <Label Text="First Name" Style="{StaticResource LabelStyle}" />
+                        <Grid>
+                            <Entry Text="{Binding FirstName}"
+                                   Style="{StaticResource EntryStyle}"
+                                   IsEnabled="{Binding IsEditMode}" />
+                        </Grid>
+
+                        <Label Text="Last Name" Style="{StaticResource LabelStyle}" />
+                        <Grid>
+                            <Entry Text="{Binding LastName}"
+                                   Style="{StaticResource EntryStyle}"
+                                   IsEnabled="{Binding IsEditMode}" />
+                        </Grid>
+
+                        <Label Text="Phone Number" Style="{StaticResource LabelStyle}" />
+                        <Grid>
+                            <Entry Text="{Binding PhoneNumber}"
+                                   Style="{StaticResource EntryStyle}"
+                                   Keyboard="Telephone"
+                                   IsEnabled="{Binding IsEditMode}" />
+                        </Grid>
+
+                        <Button Text="Save Changes"
+                                Command="{Binding UpdateProfileCommand}"
+                                BackgroundColor="{AppThemeBinding Light=#007AFF, Dark=#0A84FF}"
+                                TextColor="White"
+                                CornerRadius="22"
+                                HeightRequest="40"
+                                Margin="0,15,0,0"
+                                IsVisible="{Binding IsEditMode}"
+                                x:Name="UpdateButton" />
+                    </StackLayout>
+                </Grid>
+            </Frame>
+        </Grid>
+    </ScrollView>
 </ContentPage>
