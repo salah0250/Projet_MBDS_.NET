@@ -40,5 +40,10 @@ namespace Gauniv.Client.Services
             _networkService.SetAuthToken(token);
             IsConnected = true;
         }
+
+        public HttpClient GetHttpClient()
+        {
+            return _networkService.httpClient;
+        }
     }
 }

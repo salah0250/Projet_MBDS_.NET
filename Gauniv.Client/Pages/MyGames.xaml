@@ -6,10 +6,10 @@
              x:Class="Gauniv.Client.Pages.MyGames"
              Title="MyGames"
              x:DataType="vm:MyGamesViewModel"
-             BackgroundColor="#1E2A38">
+             BackgroundColor="#1A1F2B">
 
-    <Grid RowDefinitions="Auto,*" Padding="16">
-        <!-- Titre -->
+    <Grid RowDefinitions="Auto,*" Padding="12">
+        <!-- Header -->
         <Label Text="Ma Bibliothèque" 
                Grid.Row="0"
                FontSize="32" 
@@ -17,67 +17,108 @@
                TextColor="White"
                Margin="0,0,0,20"/>
 
-        <!-- Liste des jeux -->
+        <!-- Game Grid -->
         <ScrollView Grid.Row="1">
             <CollectionView ItemsSource="{Binding Games}"
                           SelectionMode="Single"
                           SelectionChanged="OnGameSelected">
                 <CollectionView.EmptyView>
-                    <StackLayout HorizontalOptions="Center" 
-                               VerticalOptions="Center">
+                    <VerticalStackLayout HorizontalOptions="Center" 
+                                       VerticalOptions="Center"
+                                       Spacing="20">
+                        <Image Source="empty_library.png"
+                               HeightRequest="120"
+                               WidthRequest="120"
+                               Opacity="0.7"/>
                         <Label Text="Aucun jeu dans votre bibliothèque." 
                                FontSize="18" 
-                               TextColor="White"/>
-                    </StackLayout>
+                               TextColor="#8FA3B0"
+                               HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
                 </CollectionView.EmptyView>
 
                 <CollectionView.ItemsLayout>
                     <GridItemsLayout Orientation="Vertical"
-                                   Span="1"
-                                   VerticalItemSpacing="16"/>
+                                   Span="3"
+                                   HorizontalItemSpacing="12"
+                                   VerticalItemSpacing="12"/>
                 </CollectionView.ItemsLayout>
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="model:Game">
                         <Frame BackgroundColor="#2C3E50"
                                Padding="0"
-                               CornerRadius="8"
+                               CornerRadius="12"
                                HasShadow="True"
                                BorderColor="Transparent">
-                            <Grid RowDefinitions="Auto,Auto"
-                                  Padding="0">
-                                <!-- Image du jeu -->
-                                <Image Grid.Row="0"
-                                       Source="{Binding ImageSource}"
-                                       Aspect="AspectFill"
-                                       HeightRequest="200"
-                                       HorizontalOptions="Fill"/>
+                            <Grid RowDefinitions="Auto,Auto,Auto">
+                                <!-- Game Image with Overlay -->
+                                <Grid Grid.Row="0">
+                                    <Image Source="{Binding ImageSource}"
+                                           Aspect="AspectFill"
+                                           HeightRequest="160"/>
 
-                                <!-- Informations du jeu -->
-                                <StackLayout Grid.Row="1"
-                                           Padding="16"
-                                           Spacing="8">
+                                    <!-- Category Badge -->
+                                    <Border BackgroundColor="#3498DB"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 12"
+                                            Padding="8,4"
+                                            HorizontalOptions="Start"
+                                            VerticalOptions="Start"
+                                            Margin="8">
+                                        <Label Text="{Binding Category}"
+                                               TextColor="White"
+                                               FontSize="12"
+                                               FontAttributes="Bold"/>
+                                    </Border>
+
+                                    <!-- Price Badge -->
+                                    <Border BackgroundColor="#2ECC71"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 12"
+                                            Padding="8,4"
+                                            HorizontalOptions="End"
+                                            VerticalOptions="Start"
+                                            Margin="8">
+                                        <Label Text="{Binding Price, StringFormat='{0:F0} €'}"
+                                               TextColor="White"
+                                               FontSize="12"
+                                               FontAttributes="Bold"/>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Game Info -->
+                                <VerticalStackLayout Grid.Row="1"
+                                                   Padding="12,8"
+                                                   Spacing="4">
                                     <Label Text="{Binding Title}"
-                                           FontSize="24"
+                                           FontSize="16"
                                            FontAttributes="Bold"
-                                           TextColor="White"/>
+                                           TextColor="White"
+                                           MaxLines="1"
+                                           LineBreakMode="TailTruncation"/>
+
+                                    <Label Text="{Binding ReleaseDate, StringFormat='{0:dd/MM/yyyy}'}"
+                                           FontSize="12"
+                                           TextColor="#8FA3B0"/>
 
                                     <Label Text="{Binding Description}"
-                                           FontSize="14"
+                                           FontSize="13"
                                            TextColor="#BDC3C7"
                                            MaxLines="2"
                                            LineBreakMode="TailTruncation"/>
+                                </VerticalStackLayout>
 
-                                    <Button Text="Télécharger"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DownloadGameCommand}"
-                                            CommandParameter="{Binding .}"
-                                            BackgroundColor="#3498DB"
-                                            TextColor="White"
-                                            CornerRadius="8"
-                                            HeightRequest="40"
-                                            Margin="0,8,0,0"
-                                            FontAttributes="Bold"/>
-                                </StackLayout>
+                                <!-- Download Button -->
+                                <Button Grid.Row="2"
+                                Text="Télécharger"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MyGamesViewModel}}, Path=DownloadGameCommand}"
+                                CommandParameter="{Binding .}"
+                                BackgroundColor="#3498DB"
+                                TextColor="White"
+                                CornerRadius="8"
+                                HeightRequest="36"
+                                Margin="12,0,12,12"/>
                             </Grid>
                         </Frame>
                     </DataTemplate>

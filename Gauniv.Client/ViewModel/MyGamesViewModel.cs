@@ -1,61 +1,61 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Gauniv.Client.Pages;
 using Gauniv.Client.Services;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
+using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
+using CommunityToolkit.Maui.Storage;
 using Gauniv.Client.Data;
-using System.IO; // Pour l'accès aux fichiers
-using System.Threading.Tasks; // Pour les méthodes async
 
 namespace Gauniv.Client.ViewModel
 {
     public partial class MyGamesViewModel : ObservableObject
     {
         private readonly UserLibraryService _userLibraryService;
-
+        private readonly AuthService _authService;
         public ObservableCollection<Game> Games { get; } = new ObservableCollection<Game>();
 
         public MyGamesViewModel()
         {
             _userLibraryService = new UserLibraryService();
+            _authService = new AuthService();
             LoadUserLibrary();
         }
-
 
         // Créer une commande RelayCommand pour le téléchargement
         public IRelayCommand<Game> DownloadGameCommand => new RelayCommand<Game>(async (game) => await DownloadGameAsync(game));
 
         private async Task DownloadGameAsync(Game game)
         {
-            if (game.Payload != null)
+            try
             {
-                var fileName = $"{game.Title}.game"; // Changez l'extension si nécessaire
-                var filePath = Path.Combine(FileSystem.CacheDirectory, fileName);
+                var fileName = $"{game.Title}.zip";
+                var filePath = Path.Combine(FileSystem.AppDataDirectory, fileName);
 
-                try
+                var httpClient = _authService.GetHttpClient();
+                var downloadUrl = $"https://localhost/api/1.0.0/Games/Download/{game.Id}";
+
+                var response = await httpClient.GetAsync(downloadUrl);
+                response.EnsureSuccessStatusCode();
+
+                var fileBytes = await response.Content.ReadAsByteArrayAsync();
+                using (var stream = new MemoryStream(fileBytes))
                 {
-                    await File.WriteAllBytesAsync(filePath, game.Payload);
-                    Debug.WriteLine($"Game downloaded to: {filePath}");
-                    // Afficher un message à l'utilisateur
+                    await FileSaver.Default.SaveAsync(filePath, stream);
                 }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error downloading game: {ex.Message}");
-                }
+
+                await Application.Current.Windows[0].Page.DisplayAlert("Success", "Game downloaded successfully!", "OK");
             }
-            else
+            catch (Exception ex)
             {
-                Debug.WriteLine("No payload available for download.");
+                await Application.Current.Windows[0].Page.DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
             }
         }
-
 
         private async void LoadUserLibrary()
         {
@@ -82,6 +82,5 @@ namespace Gauniv.Client.ViewModel
                 Debug.WriteLine($"Error loading user library: {ex.Message}");
             }
         }
-
     }
 }
