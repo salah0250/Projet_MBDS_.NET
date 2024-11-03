@@ -149,6 +149,18 @@ Cette plateforme est conçue pour gérer une bibliothèque de jeux vidéo en lig
 3. **Category** : Contient les genres ou catégories de jeux.
 4. **UserGame** : Associe les utilisateurs aux jeux qu’ils possèdent, incluant la date d'achat.
 
+## Versions du Jeu
+
+### DamienV3
+
+DamienV3 est une version simple du jeu qui ne nécessite pas de serveur. Cette version permet aux utilisateurs de jouer localement sans avoir besoin de se connecter à un serveur.
+
+### DamienV3 - avec serveur
+
+DamienV3 - avec serveur est une version du jeu qui est liée au GameServer. Cette version est conçue pour des communications TCP entre les joueurs, où les actions des joueurs sont coordonnées et gérées par un serveur central via des connexions TCP. Les joueurs doivent se connecter avec leur véritable email et mot de passe pour accéder au jeu.
+
+Malheureusement, nous n'avons pas pu terminer toutes les fonctionnalités de gestion du jeu côté serveur. En raison de cette limitation, nous avons décidé de proposer les deux versions du jeu :
+
 # Game & GameServer
 
 # Features Implemented
