@@ -2,11 +2,87 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:model="clr-namespace:Gauniv.Client.Data"
              x:Class="Gauniv.Client.Pages.MyGames"
              Title="MyGames"
              x:DataType="vm:MyGamesViewModel"
-             BindingContext="{vm:MyGamesViewModel}">
-    <Label Text="List de mes jeux" />
+             BackgroundColor="#1E2A38">
+
+    <Grid RowDefinitions="Auto,*" Padding="16">
+        <!-- Titre -->
+        <Label Text="Ma Bibliothèque" 
+               Grid.Row="0"
+               FontSize="32" 
+               FontAttributes="Bold" 
+               TextColor="White"
+               Margin="0,0,0,20"/>
+
+        <!-- Liste des jeux -->
+        <ScrollView Grid.Row="1">
+            <CollectionView ItemsSource="{Binding Games}"
+                          SelectionMode="Single"
+                          SelectionChanged="OnGameSelected">
+                <CollectionView.EmptyView>
+                    <StackLayout HorizontalOptions="Center" 
+                               VerticalOptions="Center">
+                        <Label Text="Aucun jeu dans votre bibliothèque." 
+                               FontSize="18" 
+                               TextColor="White"/>
+                    </StackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical"
+                                   Span="1"
+                                   VerticalItemSpacing="16"/>
+                </CollectionView.ItemsLayout>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:Game">
+                        <Frame BackgroundColor="#2C3E50"
+                               Padding="0"
+                               CornerRadius="8"
+                               HasShadow="True"
+                               BorderColor="Transparent">
+                            <Grid RowDefinitions="Auto,Auto"
+                                  Padding="0">
+                                <!-- Image du jeu -->
+                                <Image Grid.Row="0"
+                                       Source="{Binding ImageSource}"
+                                       Aspect="AspectFill"
+                                       HeightRequest="200"
+                                       HorizontalOptions="Fill"/>
+
+                                <!-- Informations du jeu -->
+                                <StackLayout Grid.Row="1"
+                                           Padding="16"
+                                           Spacing="8">
+                                    <Label Text="{Binding Title}"
+                                           FontSize="24"
+                                           FontAttributes="Bold"
+                                           TextColor="White"/>
+
+                                    <Label Text="{Binding Description}"
+                                           FontSize="14"
+                                           TextColor="#BDC3C7"
+                                           MaxLines="2"
+                                           LineBreakMode="TailTruncation"/>
+
+                                    <Button Text="Télécharger"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DownloadGameCommand}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="#3498DB"
+                                            TextColor="White"
+                                            CornerRadius="8"
+                                            HeightRequest="40"
+                                            Margin="0,8,0,0"
+                                            FontAttributes="Bold"/>
+                                </StackLayout>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </ScrollView>
+    </Grid>
 </ContentPage>

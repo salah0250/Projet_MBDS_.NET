@@ -1,22 +1,39 @@
-﻿using System.Diagnostics;
-using System.Net.Http.Json;
-using Gauniv.Client.Data;
+﻿using Gauniv.Client.Services;
 using Newtonsoft.Json;
-
+using System.Diagnostics;
+using Gauniv.Client.Data;
 public class GameService
 {
-    private readonly HttpClient _httpClient;
+    private readonly NetworkService _networkService;
 
-    public GameService(HttpClient httpClient)
+    public GameService()
     {
-        _httpClient = httpClient;
+        _networkService = NetworkService.Instance;
     }
+
+    public async Task<IEnumerable<Game>> GetFilteredGamesAsync(string searchTerm, decimal? minPrice, decimal? maxPrice, string category)
+    {
+        try
+        {
+            var uri = $"/api/1.0.0/Games/GetFilteredGames/filter?searchTerm={searchTerm}&minPrice={minPrice}&maxPrice={maxPrice}&category={category}";
+            var response = await _networkService.httpClient.GetAsync(uri);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<List<Game>>(content);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error fetching filtered games: {ex.Message}");
+            return Enumerable.Empty<Game>();
+        }
+    }
+
 
     public async Task<IEnumerable<Game>> GetAllGamesAsync()
     {
         try
         {
-            var response = await _httpClient.GetAsync("https://localhost:59221/api/1.0.0/Games/GetAllGames");
+            var response = await _networkService.httpClient.GetAsync("/api/1.0.0/Games/GetAllGames");
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<List<Game>>(content);
@@ -27,6 +44,4 @@ public class GameService
             return Enumerable.Empty<Game>();
         }
     }
-
 }
-
