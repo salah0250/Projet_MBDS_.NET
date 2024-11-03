@@ -33,6 +33,7 @@ namespace Gauniv.Client.Data
 
         public ImageSource ImageSource => Image != null ? ImageSource.FromStream(() => new MemoryStream(Image)) : null;
 
+        public bool IsNotInLibrary { get; set; }
 
     }
 

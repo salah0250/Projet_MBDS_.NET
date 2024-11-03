@@ -9,7 +9,7 @@ using Gauniv.Client.Data;
 
 namespace Gauniv.Client.Services
 {
-    internal class UserLibraryService
+    public class UserLibraryService
     {
         private readonly NetworkService _networkService;
 
