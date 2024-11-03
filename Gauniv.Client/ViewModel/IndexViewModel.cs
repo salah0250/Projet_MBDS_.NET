@@ -1,15 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Gauniv.Client.Pages;
+using Gauniv.Client.Data;
 using Gauniv.Client.Services;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using Gauniv.Client.Data;   
+using System.Threading.Tasks;
 
 namespace Gauniv.Client.ViewModel
 {
@@ -19,9 +16,7 @@ namespace Gauniv.Client.ViewModel
 
         public ObservableCollection<Game> Games { get; } = new ObservableCollection<Game>();
 
-        public IndexViewModel() { } // Parameterless constructor
-
-        public IndexViewModel(GameService gameService) // Constructor with dependency injection
+        public IndexViewModel(GameService gameService)
         {
             _gameService = gameService;
             LoadGames();
@@ -31,16 +26,12 @@ namespace Gauniv.Client.ViewModel
         {
             try
             {
-                if (_gameService != null)
+                var games = await _gameService.GetAllGamesAsync();
+                Games.Clear();
+                foreach (var game in games)
                 {
-                    var games = await _gameService.GetAllGamesAsync();
-                    Games.Clear();
-                    foreach (var game in games)
-                    {
-                        Games.Add(game);
-                        Debug.WriteLine($"Loaded game: {game.Title}");
-                    }
-            }
+                    Games.Add(game);
+                }
             }
             catch (Exception ex)
             {
@@ -48,5 +39,21 @@ namespace Gauniv.Client.ViewModel
             }
         }
 
+        public async Task LoadFilteredGames(string searchTerm, decimal? minPrice, decimal? maxPrice, string category)
+        {
+            try
+            {
+                var filteredGames = await _gameService.GetFilteredGamesAsync(searchTerm, minPrice, maxPrice, category);
+                Games.Clear();
+                foreach (var game in filteredGames)
+                {
+                    Games.Add(game);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading filtered games: {ex.Message}");
+            }
+        }
     }
 }

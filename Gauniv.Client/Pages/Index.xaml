@@ -5,24 +5,189 @@
              xmlns:model="clr-namespace:Gauniv.Client.Data"
              x:Class="Gauniv.Client.Pages.Index"
              Title="Index"
-             x:DataType="vm:IndexViewModel">
+             x:DataType="vm:IndexViewModel"
+             BackgroundColor="#1E2A38">
+    <!-- Couleur de fond plus sombre -->
 
-    <StackLayout>
-        <Label Text="List of Games" FontSize="24" HorizontalOptions="Center" />
-        <CollectionView ItemsSource="{Binding Games}">
+    <Grid RowDefinitions="Auto,*" Padding="16">
+        <!-- Section de recherche et filtres -->
+        <Frame Grid.Row="0" 
+               BackgroundColor="#2C3E50" 
+               Padding="16" 
+               CornerRadius="8"
+               BorderColor="Transparent"
+               Margin="0,0,0,16">
+
+            <StackLayout Spacing="16">
+                <!-- Barre de recherche -->
+                <Border BackgroundColor="#34495E"
+                        StrokeShape="RoundRectangle 8"
+                        Padding="8,0"
+                        StrokeThickness="0">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Image Grid.Column="0" 
+                               Source="search.png"
+                               HeightRequest="20"
+                               WidthRequest="20"
+                               Margin="8,0"/>
+                        <Entry x:Name="searchTermEntry"
+                               Grid.Column="1"
+                               Placeholder="Rechercher un jeu..."
+                               PlaceholderColor="#6C7A89"
+                               TextColor="White"
+                               BackgroundColor="Transparent"/>
+                    </Grid>
+                </Border>
+
+                <!-- Filtres -->
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" 
+                      ColumnSpacing="8">
+
+                    <!-- Prix Min/Max -->
+                    <Border Grid.Column="0"
+                            BackgroundColor="#34495E"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="8,0"
+                            StrokeThickness="0">
+                        <Entry x:Name="minPriceEntry"
+                               Placeholder="Prix min"
+                               PlaceholderColor="#6C7A89"
+                               TextColor="White"
+                               Keyboard="Numeric"
+                               WidthRequest="100"/>
+                    </Border>
+
+                    <Border Grid.Column="1"
+                            BackgroundColor="#34495E"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="8,0"
+                            StrokeThickness="0">
+                        <Entry x:Name="maxPriceEntry"
+                               Placeholder="Prix max"
+                               PlaceholderColor="#6C7A89"
+                               TextColor="White"
+                               Keyboard="Numeric"
+                               WidthRequest="100"/>
+                    </Border>
+
+                    <!-- Catégories -->
+                    <Border Grid.Column="2"
+                            BackgroundColor="#34495E"
+                            StrokeShape="RoundRectangle 8"
+                            Padding="8,0"
+                            StrokeThickness="0">
+                        <Picker x:Name="categoryPicker"
+                                Title="Toutes les catégories"
+                                TextColor="White"
+                                TitleColor="#6C7A89">
+                            <Picker.ItemsSource>
+                                <x:Array Type="{x:Type x:String}">
+                                    <x:String>Toutes les catégories</x:String>
+                                    <x:String>Action</x:String>
+                                    <x:String>Puzzle</x:String>
+                                    <x:String>Adventure</x:String>
+                                    <x:String>RPG</x:String>
+                                    <x:String>Strategy</x:String>
+                                </x:Array>
+                            </Picker.ItemsSource>
+                        </Picker>
+                    </Border>
+
+                    <!-- Boutons -->
+                    <Button Grid.Column="3"
+                            Text="Filtrer"
+                            Clicked="OnFilterClicked"
+                            BackgroundColor="#3498DB"
+                            TextColor="White"
+                            CornerRadius="8"
+                            Padding="16,8"/>
+
+                    <Button Grid.Column="4"
+                            Text="Réinitialiser"
+                            Clicked="OnResetClicked"
+                            BackgroundColor="#E74C3C"
+                            TextColor="White"
+                            CornerRadius="8"
+                            Padding="16,8"/>
+                </Grid>
+            </StackLayout>
+        </Frame>
+
+        <!-- Liste des jeux -->
+        <CollectionView Grid.Row="1" 
+                        ItemsSource="{Binding Games}"
+                        SelectionMode="Single"
+                        SelectionChanged="OnGameSelected">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical"
+                                Span="2"
+                                HorizontalItemSpacing="16"
+                                VerticalItemSpacing="16"/>
+            </CollectionView.ItemsLayout>
+
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="model:Game">
-                    <StackLayout Padding="10">
-                        <Image Source="{Binding ImageSource}" 
-                               HeightRequest="200" 
-                               Aspect="AspectFill" 
-                               HorizontalOptions="Center" />
-                        <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="{Binding Description}" FontSize="14" />
-                        <Label Text="{Binding Price, StringFormat='Price: {0:C}'}" FontSize="14" />
-                    </StackLayout>
+                    <Frame BackgroundColor="#2C3E50"
+                           Padding="16"
+                           CornerRadius="8"
+                           BorderColor="Transparent"
+                           HasShadow="True">
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+                              RowSpacing="8">
+
+                            <!-- Image du jeu -->
+                            <Frame Grid.Row="0"
+                                   IsClippedToBounds="True"
+                                   Padding="0"
+                                   CornerRadius="8">
+                                <Image Source="{Binding ImageSource}"
+                                       Aspect="AspectFill"
+                                       HeightRequest="120"/>
+                            </Frame>
+
+                            <!-- Titre et Catégorie -->
+                            <StackLayout Grid.Row="1" Spacing="8">
+                                <Label Text="{Binding Title}"
+                                       TextColor="White"
+                                       FontSize="18"
+                                       FontAttributes="Bold"/>
+
+                                <Frame Padding="8,4"
+                                       BackgroundColor="#3498DB"
+                                       CornerRadius="16"
+                                       HorizontalOptions="Start">
+                                    <Label Text="{Binding Category}"
+                                           TextColor="White"
+                                           FontSize="12"/>
+                                </Frame>
+                            </StackLayout>
+
+                            <!-- Description -->
+                            <Label Grid.Row="2"
+                                   Text="{Binding Description}"
+                                   TextColor="#BDC3C7"
+                                   FontSize="14"
+                                   MaxLines="2"
+                                   LineBreakMode="TailTruncation"/>
+
+                            <!-- Date et Prix -->
+                            <Grid Grid.Row="3" 
+                                  ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0"
+                                       Text="{Binding ReleaseDate, StringFormat='{0:dd/MM/yyyy}'}"
+                                       TextColor="#95A5A6"
+                                       FontSize="12"/>
+
+                                <Label Grid.Column="1"
+                                       Text="{Binding Price, StringFormat='{0:C}'}"
+                                       TextColor="#3498DB"
+                                       FontSize="18"
+                                       FontAttributes="Bold"/>
+                            </Grid>
+                        </Grid>
+                    </Frame>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-    </StackLayout>
+    </Grid>
 </ContentPage>
