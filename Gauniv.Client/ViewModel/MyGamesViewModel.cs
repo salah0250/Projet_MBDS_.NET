@@ -80,7 +80,7 @@ namespace Gauniv.Client.ViewModel
         }
 
 
-        private async void LoadUserLibrary()
+        public async Task LoadUserLibrary()
         {
             try
             {
