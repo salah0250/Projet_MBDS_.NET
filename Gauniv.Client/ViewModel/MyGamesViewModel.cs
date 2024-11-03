@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
 using CommunityToolkit.Maui.Storage;
 using Gauniv.Client.Data;
+using System.IO.Compression;
 
 namespace Gauniv.Client.ViewModel
 {
@@ -35,27 +36,49 @@ namespace Gauniv.Client.ViewModel
             try
             {
                 var fileName = $"{game.Title}.zip";
-                var filePath = Path.Combine(FileSystem.AppDataDirectory, fileName);
+
+                // Let the user choose the folder for download
+                var folderResult = await FolderPicker.Default.PickAsync();
+                if (folderResult == null)
+                {
+                    // User canceled folder selection
+                    return;
+                }
+
+                var selectedFolderPath = folderResult.Folder.Path;
+                var filePath = Path.Combine(selectedFolderPath, fileName);
+                var extractionPath = Path.Combine(selectedFolderPath, game.Title);
 
                 var httpClient = _authService.GetHttpClient();
                 var downloadUrl = $"https://localhost/api/1.0.0/Games/Download/{game.Id}";
 
+                // Download the zip file
                 var response = await httpClient.GetAsync(downloadUrl);
                 response.EnsureSuccessStatusCode();
 
                 var fileBytes = await response.Content.ReadAsByteArrayAsync();
-                using (var stream = new MemoryStream(fileBytes))
+                await File.WriteAllBytesAsync(filePath, fileBytes);
+
+                // Extract the downloaded zip file to the selected folder
+                if (Directory.Exists(extractionPath))
                 {
-                    await FileSaver.Default.SaveAsync(filePath, stream);
+                    Directory.Delete(extractionPath, true); // Clear any existing directory with the same name
                 }
 
-                await Application.Current.Windows[0].Page.DisplayAlert("Success", "Game downloaded successfully!", "OK");
+                ZipFile.ExtractToDirectory(filePath, extractionPath);
+
+                // Delete the zip file after extraction
+                File.Delete(filePath);
+
+                // Notify the user about the extraction
+                await Shell.Current.DisplayAlert("Success", "Game downloaded and extracted successfully!", "OK");
             }
             catch (Exception ex)
             {
-                await Application.Current.Windows[0].Page.DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
+                await Shell.Current.DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
             }
         }
+
 
         private async void LoadUserLibrary()
         {
