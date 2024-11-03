@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Storage;
 using Gauniv.Client.Pages;
 using Gauniv.Client.Services;
 using Gauniv.Client.ViewModel;
@@ -31,6 +32,9 @@ namespace Gauniv.Client
 
             // Register GameService as a singleton
             builder.Services.AddSingleton<GameService>();
+
+            builder.Services.AddSingleton<IFileSaver>(FileSaver.Default);
+            builder.Services.AddTransient<MyGamesViewModel>();
 
             // Register ViewModel
             builder.Services.AddTransient<IndexViewModel>();
