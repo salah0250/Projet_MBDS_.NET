@@ -3,12 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Gauniv.Client.ViewModel"
              xmlns:model="clr-namespace:Gauniv.Client.Data"
+             xmlns:converters="clr-namespace:Gauniv.Client.Converters"
              x:Class="Gauniv.Client.Pages.MyGames"
              Title="MyGames"
              x:DataType="vm:MyGamesViewModel"
              BackgroundColor="#1A1F2B">
 
-    <Grid RowDefinitions="Auto,*" Padding="12">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="12">
         <!-- Header -->
         <Label Text="Ma Bibliothèque" 
                Grid.Row="0"
@@ -17,11 +18,48 @@
                TextColor="White"
                Margin="0,0,0,20"/>
 
+        <!-- Settings Section -->
+        <Frame Grid.Row="1" 
+               BackgroundColor="#2C3E50"
+               Padding="12"
+               CornerRadius="12"
+               HasShadow="True"
+               BorderColor="Transparent"
+               Margin="0,0,0,20">
+            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                <Label Text="Dossier de téléchargement"
+                       Grid.Row="0"
+                       Grid.ColumnSpan="2"
+                       TextColor="White"
+                       FontSize="16"
+                       FontAttributes="Bold"
+                       Margin="0,0,0,8"/>
+
+                <Label Text="{Binding DefaultDownloadPath}"
+                       Grid.Row="1"
+                       Grid.Column="0"
+                       TextColor="#8FA3B0"
+                       LineBreakMode="MiddleTruncation"
+                       VerticalOptions="Center"/>
+
+                <Button Grid.Row="1"
+                        Grid.Column="1"
+                        Text="Modifier"
+                        Command="{Binding SetDefaultDownloadPathCommand}"
+                        BackgroundColor="#3498DB"
+                        TextColor="White"
+                        CornerRadius="8"
+                        HeightRequest="36"
+                        Padding="12,0"/>
+            </Grid>
+        </Frame>
+
         <!-- Game Grid -->
-        <ScrollView Grid.Row="1">
+        <ScrollView Grid.Row="2">
             <CollectionView ItemsSource="{Binding Games}"
                           SelectionMode="Single"
                           SelectionChanged="OnGameSelected">
+                <!-- Your existing CollectionView content -->
                 <CollectionView.EmptyView>
                     <VerticalStackLayout HorizontalOptions="Center" 
                                        VerticalOptions="Center"
@@ -49,7 +87,6 @@
                         <Frame BackgroundColor="#2C3E50"
                                Padding="0"
                                CornerRadius="12"
-                               HeightRequest="320"
                                HasShadow="True"
                                BorderColor="Transparent">
                             <Grid RowDefinitions="Auto,Auto,Auto">
@@ -110,16 +147,42 @@
                                            LineBreakMode="TailTruncation"/>
                                 </VerticalStackLayout>
 
-                                <!-- Download Button -->
-                                <Button Grid.Row="2"
-                                Text="Télécharger"
-                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MyGamesViewModel}}, Path=DownloadGameCommand}"
-                                CommandParameter="{Binding .}"
-                                BackgroundColor="#3498DB"
-                                TextColor="White"
-                                CornerRadius="8"
-                                HeightRequest="36"
-                                Margin="12,0,12,12"/>
+                                <!-- Dynamic Buttons -->
+                                <Grid Grid.Row="2" Margin="12,0,12,12" ColumnDefinitions="*,*" ColumnSpacing="8">
+                                    <!-- Download Button -->
+                                    <Button Grid.Column="0"
+                                            Grid.ColumnSpan="2"
+                                            Text="Télécharger"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MyGamesViewModel}}, Path=DownloadGameCommand}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="#3498DB"
+                                            TextColor="White"
+                                            CornerRadius="8"
+                                            HeightRequest="36"
+                                            IsVisible="{Binding IsDownloaded, Converter={StaticResource InverseBoolConverter}}"/>
+
+                                    <!-- Launch Button -->
+                                    <Button Grid.Column="0"
+                                            Text="Lancer"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MyGamesViewModel}}, Path=LaunchGameCommand}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="#2ECC71"
+                                            TextColor="White"
+                                            CornerRadius="8"
+                                            HeightRequest="36"
+                                            IsVisible="{Binding IsDownloaded}"/>
+
+                                    <!-- Delete Button -->
+                                    <Button Grid.Column="1"
+                                            Text="Supprimer"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MyGamesViewModel}}, Path=DeleteGameCommand}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="#E74C3C"
+                                            TextColor="White"
+                                            CornerRadius="8"
+                                            HeightRequest="36"
+                                            IsVisible="{Binding IsDownloaded}"/>
+                                </Grid>
                             </Grid>
                         </Frame>
                     </DataTemplate>

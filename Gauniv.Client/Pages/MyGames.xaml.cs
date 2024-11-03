@@ -11,6 +11,12 @@ public partial class MyGames : ContentPage
         ViewModel = new MyGamesViewModel();
         BindingContext = ViewModel;
     }
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await ViewModel.LoadUserLibrary(); 
+    }
+
     private async void OnGameSelected(object sender, SelectionChangedEventArgs e)
     {
         if (e.CurrentSelection.Count > 0)
@@ -21,12 +27,6 @@ public partial class MyGames : ContentPage
                 await Navigation.PushModalAsync(new GameDetails(selectedGame));
             }
         }
-        ((CollectionView)sender).SelectedItem = null;
-    }
-
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await ViewModel.LoadUserLibrary(); // Load the games each time the page appears
+    ((CollectionView)sender).SelectedItem = null;
     }
 }

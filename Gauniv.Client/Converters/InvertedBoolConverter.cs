@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Gauniv.Client.Converters
 {
-    public class InvertedBoolConverter : IValueConverter
+    public class InverseBoolConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
