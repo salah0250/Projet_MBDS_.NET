@@ -176,3 +176,40 @@ Game Start
 
 ## Game Master (GM) Functionality
 Cell Selection: The GM chooses a target cell on the game grid for players to click
+
+
+# Jeu & Serveur de Jeu
+## Fonctionnalités Implémentées
+1.Compatibilité Mono-Utilisateur
+
+-Configuration Actuelle : Le jeu prend actuellement en charge un seul joueur par session.
+
+2.Système de Connexion
+
+-Authentification : Les joueurs s'authentifient avec un nom d'utilisateur et un mot de passe.
+-Sélection de Nom Unique : Chaque joueur peut choisir un nom d'utilisateur unique pour participer au jeu.
+
+3.Vérification de Prêt
+
+-Fonctionnalité : Un système de vérification de prêt garantit que tous les joueurs confirment qu'ils sont prêts avant le début de la partie.
+
+## Serveur de Jeu
+*Branche GameServer*
+
+1.Serveur Basé sur Console
+-Type de Serveur : Une application console agit comme le serveur de jeu, coordonnant les actions des joueurs et gérant le déroulement de la partie.
+
+-Protocole de Communication : TCP est utilisé pour gérer la communication entre les joueurs et le serveur.
+
+2.Problème de Sérialisation
+Limitation Actuelle : La fonctionnalité de synchronisation du serveur est actuellement limitée en raison d'un problème de sérialisation avec MessagePack.
+
+## Déroulement du Jeu
+
+Début de la Partie
+-Préparation des Joueurs : Tous les joueurs doivent confirmer leur disponibilité pour commencer la partie.
+
+-Attribution des Rôles : Le serveur désigne un joueur comme Maître du Jeu (MJ) et informe chaque participant de son rôle.
+
+## Fonctionnalité du Maître du Jeu (MJ)
+Sélection de Case : Le MJ choisit une case cible sur la grille de jeu que les joueurs doivent cliquer.
