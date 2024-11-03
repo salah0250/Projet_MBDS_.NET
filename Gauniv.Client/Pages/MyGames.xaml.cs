@@ -3,10 +3,13 @@ using Gauniv.Client.Data;
 namespace Gauniv.Client.Pages;
 public partial class MyGames : ContentPage
 {
+
+    public MyGamesViewModel ViewModel { get; }
     public MyGames()
     {
         InitializeComponent();
-        BindingContext = new MyGamesViewModel();
+        ViewModel = new MyGamesViewModel();
+        BindingContext = ViewModel;
     }
     private async void OnGameSelected(object sender, SelectionChangedEventArgs e)
     {
@@ -19,5 +22,11 @@ public partial class MyGames : ContentPage
             }
         }
         ((CollectionView)sender).SelectedItem = null;
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await ViewModel.LoadUserLibrary(); // Load the games each time the page appears
     }
 }

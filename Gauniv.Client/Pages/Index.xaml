@@ -132,6 +132,7 @@
                 <DataTemplate x:DataType="model:Game">
                     <Frame BackgroundColor="#2C3E50"
                            Padding="16"
+                           HeightRequest="320"
                            CornerRadius="8"
                            BorderColor="Transparent"
                            HasShadow="True">

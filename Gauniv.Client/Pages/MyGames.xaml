@@ -49,6 +49,7 @@
                         <Frame BackgroundColor="#2C3E50"
                                Padding="0"
                                CornerRadius="12"
+                               HeightRequest="320"
                                HasShadow="True"
                                BorderColor="Transparent">
                             <Grid RowDefinitions="Auto,Auto,Auto">

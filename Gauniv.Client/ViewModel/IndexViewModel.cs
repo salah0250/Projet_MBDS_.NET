@@ -44,7 +44,9 @@ namespace Gauniv.Client.ViewModel
             }
         }
 
-        private async void LoadGames()
+        public async 
+        Task
+LoadGames()
         {
             try
             {
