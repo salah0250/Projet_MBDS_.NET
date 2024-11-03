@@ -1,0 +1,4 @@
+res://Scenes/Game/MainGameScene.tscn
+res://Scenes/UI/LoginScreen.tscn
+res://Scenes/UI/NameSelectionScreen.tscn
+res://Scenes/UI/ReadyCheckScreen.tscn
