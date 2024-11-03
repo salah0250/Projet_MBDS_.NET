@@ -84,10 +84,13 @@
                                 <x:Array Type="{x:Type x:String}">
                                     <x:String>Toutes les catégories</x:String>
                                     <x:String>Action</x:String>
-                                    <x:String>Puzzle</x:String>
                                     <x:String>Adventure</x:String>
                                     <x:String>RPG</x:String>
                                     <x:String>Strategy</x:String>
+                                    <x:String>Sports</x:String>
+                                    <x:String>Puzzle</x:String>
+                                    <x:String>Simulation</x:String>
+                                    <x:String>Horror</x:String>
                                 </x:Array>
                             </Picker.ItemsSource>
                         </Picker>
@@ -184,6 +187,23 @@
                                        FontSize="18"
                                        FontAttributes="Bold"/>
                             </Grid>
+
+                            <!-- Bouton Acheter -->
+                            <Button Grid.Row="3"
+                                Grid.Column="0"
+                                Text="Acheter"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:IndexViewModel}}, Path=PurchaseGameCommand}"
+                                CommandParameter="{Binding .}"
+                                BackgroundColor="green"
+                                TextColor="White"
+                                CornerRadius="4"
+                                HeightRequest="30"
+                                WidthRequest="80"
+                                HorizontalOptions="Start"
+                                Padding="8,0"
+                                FontSize="12"
+                                IsVisible="{Binding IsNotInLibrary}"/>
+
                         </Grid>
                     </Frame>
                 </DataTemplate>

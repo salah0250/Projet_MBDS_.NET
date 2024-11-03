@@ -44,4 +44,21 @@ public class GameService
             return Enumerable.Empty<Game>();
         }
     }
+
+
+    // Ajout de la méthode d'achat
+    public async Task<bool> PurchaseGameAsync(int gameId)
+    {
+        try
+        {
+            var response = await _networkService.httpClient.PostAsync($"/api/1.0.0/Games/PurchaseGame/{gameId}/purchase", null);
+            response.EnsureSuccessStatusCode();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error purchasing game: {ex.Message}");
+            return false;
+        }
+    }
 }

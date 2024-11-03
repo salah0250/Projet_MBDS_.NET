@@ -22,5 +22,8 @@ namespace Gauniv.Client.Data
         // Relation avec les utilisateurs qui ont acheté le jeu
         public virtual ICollection<UserGame> UserGames { get; set; } = new List<UserGame>();
         public ImageSource ImageSource => Image != null ? ImageSource.FromStream(() => new MemoryStream(Image)) : null;
+
+        public bool IsNotInLibrary { get; set; }
+
     }
 }

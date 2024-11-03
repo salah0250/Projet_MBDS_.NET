@@ -11,7 +11,13 @@ namespace Gauniv.Client.Pages
         public Index()
         {
             InitializeComponent();
-            ViewModel = new IndexViewModel(new GameService());
+
+            // Créez des instances des services requis
+            var gameService = new GameService();
+            var userLibraryService = new UserLibraryService(); // Assurez-vous que ce service est disponible
+
+            // Passez les deux services au constructeur d'IndexViewModel
+            ViewModel = new IndexViewModel(gameService, userLibraryService);
             BindingContext = ViewModel;
         }
 
@@ -48,7 +54,6 @@ namespace Gauniv.Client.Pages
             decimal? maxPrice = null;
             string selectedCategory = null;
 
-
             // Charger tous les jeux sans paramètres
             await ViewModel.LoadFilteredGames(searchTerm, minPrice, maxPrice, selectedCategory);
         }
@@ -67,10 +72,8 @@ namespace Gauniv.Client.Pages
                 }
             }
 
-    // Désélectionner l'élément pour éviter que le pop-up ne se réaffiche lors de la navigation
-    ((CollectionView)sender).SelectedItem = null;
+            // Désélectionner l'élément pour éviter que le pop-up ne se réaffiche lors de la navigation
+            ((CollectionView)sender).SelectedItem = null;
         }
-
     }
-
 }
