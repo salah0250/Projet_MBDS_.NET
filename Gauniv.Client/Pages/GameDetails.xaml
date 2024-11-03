@@ -124,22 +124,16 @@
                 </ScrollView>
 
                 <!-- Action Buttons -->
-                <Grid Grid.Row="2" 
-                      ColumnDefinitions="*,*"
-                      ColumnSpacing="16">
-                    <Button Grid.Column="0"
-                            Text="Fermer"
-                            Command="{Binding CloseCommand}"
-                            BackgroundColor="#34495E"
-                            TextColor="White"
-                            CornerRadius="8"/>
+                <Grid Grid.Row="2">
+                    <Button
+                    Text="Fermer"
+                    Command="{Binding CloseCommand}"
+                    BackgroundColor="#34495E"
+                    TextColor="White"
+                    CornerRadius="8"
+                    HorizontalOptions="Center"
+                    WidthRequest="150" />
 
-                    <Button Grid.Column="1"
-                            Text="Télécharger"
-                            Command="{Binding DownloadCommand}"
-                            BackgroundColor="#3498DB"
-                            TextColor="White"
-                            CornerRadius="8"/>
                 </Grid>
             </Grid>
         </Frame>

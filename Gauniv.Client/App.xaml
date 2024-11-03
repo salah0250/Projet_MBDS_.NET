@@ -9,7 +9,7 @@
             <converters:BoolToFlyoutBehaviorConverter x:Key="BoolToFlyoutBehaviorConverter"/>
             <converters:BoolToEditButtonTextConverter x:Key="BoolToVisibilityConverter"/>
             <converters:BoolToStringConverter x:Key="BoolToStringConverter"/>
-            <converters:InvertedBoolConverter x:Key="InvertedBoolConverter"/>
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />

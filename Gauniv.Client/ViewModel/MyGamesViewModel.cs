@@ -1,17 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Gauniv.Client.Services;
-using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Storage;
 using CommunityToolkit.Maui.Storage;
-using Gauniv.Client.Data;
+using Gauniv.Client.Settings;
+using System.Diagnostics;
 using System.IO.Compression;
+using Gauniv.Client.Data;
 
 namespace Gauniv.Client.ViewModel
 {
@@ -19,91 +14,183 @@ namespace Gauniv.Client.ViewModel
     {
         private readonly UserLibraryService _userLibraryService;
         private readonly AuthService _authService;
+        private readonly SettingsService _settingsService;
+
+        [ObservableProperty]
+        private string defaultDownloadPath;
+
         public ObservableCollection<Game> Games { get; } = new ObservableCollection<Game>();
 
         public MyGamesViewModel()
         {
             _userLibraryService = new UserLibraryService();
             _authService = new AuthService();
+            _settingsService = new SettingsService();
+            DefaultDownloadPath = _settingsService.GetDefaultDownloadPath();
             LoadUserLibrary();
         }
 
-        // Créer une commande RelayCommand pour le téléchargement
-        public IRelayCommand<Game> DownloadGameCommand => new RelayCommand<Game>(async (game) => await DownloadGameAsync(game));
+        [RelayCommand]
+        private async Task SetDefaultDownloadPath()
+        {
+            try
+            {
+                var folderResult = await FolderPicker.Default.PickAsync();
+                if (folderResult?.Folder != null)
+                {
+                    DefaultDownloadPath = folderResult.Folder.Path;
+                    _settingsService.SetDefaultDownloadPath(DefaultDownloadPath);
+                    await Shell.Current.DisplayAlert("Succès", "Dossier de téléchargement mis à jour avec succès!", "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlert("Erreur", $"Impossible de définir le dossier de téléchargement: {ex.Message}", "OK");
+            }
+        }
 
-        private async Task DownloadGameAsync(Game game)
+        [RelayCommand]
+        private async Task LaunchGame(Game game)
+        {
+            try
+            {
+                var gamePath = Path.Combine(DefaultDownloadPath, game.Title);
+                if (!Directory.Exists(gamePath))
+                {
+                    await Shell.Current.DisplayAlert("Erreur", "Le jeu n'est pas installé.", "OK");
+                    return;
+                }
+
+                // Assuming the executable is named the same as the game title
+                var executablePath = Path.Combine(gamePath, $"{game.Title}.exe");
+                if (!File.Exists(executablePath))
+                {
+                    await Shell.Current.DisplayAlert("Erreur", "Impossible de trouver l'exécutable du jeu.", "OK");
+                    return;
+                }
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = executablePath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlert("Erreur", $"Impossible de lancer le jeu: {ex.Message}", "OK");
+            }
+        }
+
+        [RelayCommand]
+        private async Task DeleteGame(Game game)
+        {
+            try
+            {
+                var result = await Shell.Current.DisplayAlert(
+                    "Confirmation",
+                    $"Êtes-vous sûr de vouloir supprimer {game.Title} ?",
+                    "Oui",
+                    "Non");
+
+                if (!result) return;
+
+                var gamePath = Path.Combine(DefaultDownloadPath, game.Title);
+                if (Directory.Exists(gamePath))
+                {
+                    Directory.Delete(gamePath, true);
+                    game.IsDownloaded = false;
+                    // Trigger UI update
+                    var index = Games.IndexOf(game);
+                    Games[index] = game;
+                    await Shell.Current.DisplayAlert("Succès", "Jeu supprimé avec succès!", "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlert("Erreur", $"Impossible de supprimer le jeu: {ex.Message}", "OK");
+            }
+        }
+
+        [RelayCommand]
+        private async Task DownloadGame(Game game)
         {
             try
             {
                 var fileName = $"{game.Title}.zip";
+                string selectedFolderPath;
 
-                // Let the user choose the folder for download
-                var folderResult = await FolderPicker.Default.PickAsync();
-                if (folderResult == null)
+                // Use default path if available, otherwise ask user
+                if (!string.IsNullOrEmpty(DefaultDownloadPath) && Directory.Exists(DefaultDownloadPath))
                 {
-                    // User canceled folder selection
-                    return;
+                    selectedFolderPath = DefaultDownloadPath;
+                }
+                else
+                {
+                    var folderResult = await FolderPicker.Default.PickAsync();
+                    if (folderResult?.Folder == null)
+                    {
+                        return;
+                    }
+                    selectedFolderPath = folderResult.Folder.Path;
                 }
 
-                var selectedFolderPath = folderResult.Folder.Path;
                 var filePath = Path.Combine(selectedFolderPath, fileName);
                 var extractionPath = Path.Combine(selectedFolderPath, game.Title);
 
                 var httpClient = _authService.GetHttpClient();
                 var downloadUrl = $"https://localhost/api/1.0.0/Games/Download/{game.Id}";
 
-                // Download the zip file
-                var response = await httpClient.GetAsync(downloadUrl);
+                using var response = await httpClient.GetAsync(downloadUrl);
                 response.EnsureSuccessStatusCode();
 
                 var fileBytes = await response.Content.ReadAsByteArrayAsync();
                 await File.WriteAllBytesAsync(filePath, fileBytes);
 
-                // Extract the downloaded zip file to the selected folder
                 if (Directory.Exists(extractionPath))
                 {
-                    Directory.Delete(extractionPath, true); // Clear any existing directory with the same name
+                    Directory.Delete(extractionPath, true);
                 }
 
                 ZipFile.ExtractToDirectory(filePath, extractionPath);
-
-                // Delete the zip file after extraction
                 File.Delete(filePath);
 
-                // Notify the user about the extraction
-                await Shell.Current.DisplayAlert("Success", "Game downloaded and extracted successfully!", "OK");
+                game.IsDownloaded = true;
+                // Trigger UI update
+                var index = Games.IndexOf(game);
+                Games[index] = game;
+
+                await Shell.Current.DisplayAlert("Succès", "Jeu téléchargé et extrait avec succès!", "OK");
             }
             catch (Exception ex)
             {
-                await Shell.Current.DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
+                await Shell.Current.DisplayAlert("Erreur", $"Une erreur est survenue: {ex.Message}", "OK");
             }
         }
-
 
         public async Task LoadUserLibrary()
         {
             try
             {
                 var games = await _userLibraryService.GetUserLibraryAsync();
-                Debug.WriteLine($"Games count: {games.Count()}"); // Affiche le nombre de jeux récupérés.
                 Games.Clear();
-                if (games.Any())
+                foreach (var game in games)
                 {
-                    foreach (var game in games)
-                    {
-                        Games.Add(game);
-                        Debug.WriteLine($"Loaded game: {game.Title}");
-                    }
-                }
-                else
-                {
-                    Debug.WriteLine("No games found in the user's library.");
+                    game.IsDownloaded = CheckIfGameIsDownloaded(game);
+                    Games.Add(game);
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error loading user library: {ex.Message}");
+                await Shell.Current.DisplayAlert("Erreur", "Impossible de charger la bibliothèque", "OK");
             }
+        }
+
+        private bool CheckIfGameIsDownloaded(Game game)
+        {
+            if (string.IsNullOrEmpty(DefaultDownloadPath)) return false;
+            var gamePath = Path.Combine(DefaultDownloadPath, game.Title);
+            return Directory.Exists(gamePath);
         }
     }
 }
