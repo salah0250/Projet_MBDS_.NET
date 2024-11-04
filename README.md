@@ -161,35 +161,6 @@ DamienV3 - avec serveur est une version du jeu qui est liée au GameServer. Cett
 
 Malheureusement, nous n'avons pas pu terminer toutes les fonctionnalités de gestion du jeu côté serveur. En raison de cette limitation, nous avons décidé de proposer les deux versions du jeu :
 
-# Game & GameServer
-
-# Features Implemented
-
-1. **Single-User Compatibility**
--Current Setup: The game currently supports only one player per session.
-2. **Login System**
--Authentication: Players authenticate with a username and password.
--Unique Username Selection: Each player can choose a unique username to participate in the game.
-3. **Ready Check**
--Functionality: A ready-check system ensures that all players confirm they are ready before the game starts.
-
-#    Game Server
-*Branch GameServer*
-**Console-Based Server**
-1. Server Type: A console application acts as the game server, coordinating player actions and managing game flow.
-2. Communication Protocol: TCP is used to handle communication between players and the server.
-**Serialization Issue**
--Current Limitation: The server's synchronization functionality is currently limited due to a serialization issue with MessagePack.
-
-#  Game Flow
-Game Start
-1. Player Readiness: All players must confirm readiness for the game to start.
-2. Role Assignment: The server assigns one player as the Game Master (GM) and informs each participant of their roles.
-
-## Game Master (GM) Functionality
-Cell Selection: The GM chooses a target cell on the game grid for players to click
-
-
 # Jeu & Serveur de Jeu
 ## Fonctionnalités Implémentées
 1.Compatibilité Mono-Utilisateur
